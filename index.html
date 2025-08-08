@@ -1,11 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My First GitHub Page</title>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Corporate Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="font-family:sans-serif; text-align:center; margin-top:50px;">
-  <h1>Hello World 👋</h1>
-  <p>This is my first GitHub Pages website!</p>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- HEADER -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600">MyCorp</h1>
+      <nav class="space-x-6">
+        <a href="#services" class="hover:text-blue-600">Services</a>
+        <a href="#about" class="hover:text-blue-600">About</a>
+        <a href="#contact" class="hover:text-blue-600">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="bg-blue-600 text-white py-20 text-center">
+    <h2 class="text-4xl font-bold mb-4">Welcome to MyCorp</h2>
+    <p class="text-lg mb-6">Your trusted partner for professional solutions.</p>
+    <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">
+      Get in Touch
+    </a>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="py-16 max-w-7xl mx-auto px-4">
+    <h3 class="text-3xl font-bold text-center mb-10">Our Services</h3>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+        <h4 class="text-xl font-semibold mb-2">Consulting</h4>
+        <p>We offer expert business consulting to help you grow and succeed.</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+        <h4 class="text-xl font-semibold mb-2">Technology</h4>
+        <p>Innovative tech solutions tailored to your company’s needs.</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+        <h4 class="text-xl font-semibold mb-2">Support</h4>
+        <p>24/7 customer support to keep your business running smoothly.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="bg-gray-100 py-16">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <h3 class="text-3xl font-bold mb-6">About Us</h3>
+      <p class="text-lg leading-relaxed">
+        MyCorp is committed to delivering high-quality services that empower businesses to reach their full potential.
+        Our experienced team works closely with clients to craft tailored solutions.
+      </p>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="py-16 max-w-4xl mx-auto px-4">
+    <h3 class="text-3xl font-bold text-center mb-8">Contact Us</h3>
+    <form class="bg-white p-6 rounded-lg shadow-md space-y-4">
+      <input type="text" placeholder="Your Name" class="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-600" required>
+      <input type="email" placeholder="Your Email" class="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-600" required>
+      <textarea placeholder="Your Message" class="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-600" rows="5" required></textarea>
+      <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700">
+        Send Message
+      </button>
+    </form>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 text-white py-6 text-center">
+    <p>&copy; 2025 MyCorp. All rights reserved.</p>
+  </footer>
+
 </body>
 </html>
