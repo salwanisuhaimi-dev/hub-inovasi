@@ -18,51 +18,105 @@
 
   <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
     <!-- Timeline Filter -->
-    <div class="flex justify-center gap-4 mb-10">
-      <button class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">2025</button>
-      <button class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
-      <button class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
+    <div id="yearButtons" class="flex justify-center gap-4 mb-10">
+      <button data-year="2025" class="year-btn px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">2025</button>
+      <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
+      <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
     </div>
 
     <!-- Gallery Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       <!-- Card -->
-      <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-        <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-        <div class="p-5">
-          <h3 class="text-lg font-semibold text-gray-900">Annual Conference</h3>
-          <p class="text-sm text-gray-500 mt-1">January 12, 2025</p>
-          <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            View Details
-          </button>
+      <div class="gallery-item" data-year="2025">
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900">Annual Conference</h3>
+            <p class="text-sm text-gray-500 mt-1">January 12, 2025</p>
+            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              View Details
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Card -->
-      <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-        <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-        <div class="p-5">
-          <h3 class="text-lg font-semibold text-gray-900">Product Launch</h3>
-          <p class="text-sm text-gray-500 mt-1">March 5, 2025</p>
-          <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            View Details
-          </button>
+      <div class="gallery-item" data-year="2025">
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900">Product Launch</h3>
+            <p class="text-sm text-gray-500 mt-1">March 5, 2025</p>
+            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              View Details
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Card -->
-      <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-        <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-        <div class="p-5">
-          <h3 class="text-lg font-semibold text-gray-900">Team Building</h3>
-          <p class="text-sm text-gray-500 mt-1">May 19, 2025</p>
-          <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            View Details
-          </button>
+      <div class="gallery-item" data-year="2024">
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900">Workshop</h3>
+            <p class="text-sm text-gray-500 mt-1">April 15, 2024</p>
+            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-year="2024">
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900">Charity Event</h3>
+            <p class="text-sm text-gray-500 mt-1">June 22, 2024</p>
+            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-year="2023">
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-900">Opening Ceremony</h3>
+            <p class="text-sm text-gray-500 mt-1">February 3, 2023</p>
+            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              View Details
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </main>
+
+  <script>
+    const buttons = document.querySelectorAll(".year-btn");
+    const items = document.querySelectorAll(".gallery-item");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        // Update active button styles
+        buttons.forEach(b => b.classList.remove("bg-blue-600", "text-white"));
+        buttons.forEach(b => b.classList.add("bg-gray-200", "text-gray-700"));
+        btn.classList.add("bg-blue-600", "text-white");
+        btn.classList.remove("bg-gray-200", "text-gray-700");
+
+        const year = btn.getAttribute("data-year");
+        items.forEach(item => {
+          if (item.getAttribute("data-year") === year) {
+            item.style.display = "block";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
