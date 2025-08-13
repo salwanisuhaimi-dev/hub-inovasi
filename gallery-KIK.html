@@ -39,9 +39,10 @@
   <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
     <!-- Timeline Filter -->
     <div id="yearButtons" class="flex justify-center gap-4 mb-10">
-      <button data-year="2025" class="year-btn px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">2025</button>
-      <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
-      <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
+        <button data-year="all" class="year-btn px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">All</button>
+        <button data-year="2025" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2025</button>
+        <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
+        <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
     </div>
 
     <!-- Gallery Grid -->
@@ -114,29 +115,30 @@
     </div>
   </main>
 
-  <script>
-    const buttons = document.querySelectorAll(".year-btn");
-    const items = document.querySelectorAll(".gallery-item");
+<script>
+  const buttons = document.querySelectorAll(".year-btn");
+  const items = document.querySelectorAll(".gallery-item");
 
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        // Update active button styles
-        buttons.forEach(b => b.classList.remove("bg-blue-600", "text-white"));
-        buttons.forEach(b => b.classList.add("bg-gray-200", "text-gray-700"));
-        btn.classList.add("bg-blue-600", "text-white");
-        btn.classList.remove("bg-gray-200", "text-gray-700");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // Update active button styles
+      buttons.forEach(b => b.classList.remove("bg-blue-600", "text-white"));
+      buttons.forEach(b => b.classList.add("bg-gray-200", "text-gray-700"));
+      btn.classList.add("bg-blue-600", "text-white");
+      btn.classList.remove("bg-gray-200", "text-gray-700");
 
-        const year = btn.getAttribute("data-year");
-        items.forEach(item => {
-          if (item.getAttribute("data-year") === year) {
-            item.style.display = "block";
-          } else {
-            item.style.display = "none";
-          }
-        });
+      const year = btn.getAttribute("data-year");
+
+      items.forEach(item => {
+        if (year === "all" || item.getAttribute("data-year") === year) {
+          item.style.display = "block";
+        } else {
+          item.style.display = "none";
+        }
       });
     });
-  </script>
+  });
+</script>
 
 </body>
 </html>
