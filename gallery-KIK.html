@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gallery</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
@@ -142,3 +144,20 @@
 
 </body>
 </html>
+
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyACMZk8xnVZhMMAPkVCgY4r_w5bwuzGvL8",
+  authDomain: "hub-inovasi.firebaseapp.com",
+  projectId: "hub-inovasi",
+  storageBucket: "hub-inovasi.firebasestorage.app",
+  messagingSenderId: "83629926834",
+  appId: "1:83629926834:web:f45c74e1becac672d29cab",
+  measurementId: "G-BE5W2FDKS3"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+</script>
+
