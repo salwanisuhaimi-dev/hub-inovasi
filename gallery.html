@@ -55,7 +55,7 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(csv => {
-           const rows = csvText.split("\n").map(line => {
+           const rows = csv.split("\n").map(line => {
            const yearPos = line.indexOf(",2"); // first comma before year
            if (yearPos === -1) return line.split(","); // fallback if no year found
 
