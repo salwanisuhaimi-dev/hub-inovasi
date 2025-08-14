@@ -48,6 +48,9 @@
   </main>
 
   <script>
+
+    const params = new URLSearchParam(window.location.search);
+    const selectedCategory = params.get("category");
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
 
     fetch(sheetURL)
@@ -64,6 +67,8 @@
           const category = row[4] || "";
           const year = row[6] || "";
 
+          if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
+
           html += `
             <div class="gallery-item" data-year="${year.trim()}">
               <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
@@ -79,9 +84,14 @@
               </div>
             </div>
           `;
+          }
         });
 
         document.getElementById("galleryGrid").innerHTML = html;
+
+        if (selectedCategory) {
+          document.getElementById("categoryTitle").textContent = selectedCategory + " Gallery";
+        }
 
         // Activate filter buttons
         const buttons = document.querySelectorAll(".year-btn");
