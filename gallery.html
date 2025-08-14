@@ -54,12 +54,20 @@
 
     fetch(sheetURL)
       .then(res => res.text())
-      .then(csvText => {
-        const rows = csv.split("\n").map(r => r.split(","));
-        let html = "";
+      .then(csv => {
+           const rows = csvText.split("\n").map(line => {
+           const yearPos = line.indexOf(",2"); // first comma before year
+           if (yearPos === -1) return line.split(","); // fallback if no year found
+
+           const beforeYear = line.slice(0, yearPos); // everything before year
+           const afterYear = line.slice(yearPos + 1); // everything from year onward
+           return [...beforeYear.split(","), ...afterYear.split(",")];
+        });
+        
+      let html = "";
 
         // Skip header row (index 0)
-        rows.forEach(row => {
+        rows.slice(1).forEach(row => {
           const name = row[1] || "";
           const group = row[2] || "";
           const image = row[3] || "https://via.placeholder.com/400x250";
