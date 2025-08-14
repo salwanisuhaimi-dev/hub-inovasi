@@ -46,75 +46,40 @@
         <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
         <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
     </div>
+        <!-- Gallery Grid -->
+    <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
-    <!-- Gallery Grid -->
-    <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      <!-- Card -->
-      <div class="gallery-item" data-year="2025">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-gray-900">Annual Conference</h3>
-            <p class="text-sm text-gray-500 mt-1">January 12, 2025</p>
-            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
+    <script>
+       const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/gviz/tq?tqx=out:json";
+       fetch(sheetURL)
+          .then(res => res.text())
+          .then(text => {
+           const json = JSON.parse(text.substr(47).slice(0, -2));
+           let html = "";
 
-      <div class="gallery-item" data-year="2025">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-gray-900">Product Launch</h3>
-            <p class="text-sm text-gray-500 mt-1">March 5, 2025</p>
-            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
+              json.table.rows.forEach(row => {
+              html += `
+               <div class="gallery-item" data-year="2025">
+                   <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+                     <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
+                     <div class="p-5">
+                          <h3 class="text-lg font-semibold text-gray-900">${row.c[0].v} (${row.c[1].v})</h3>
+                          <p class="text-sm text-gray-500 mt-1">${row.c[3].v}</p>
+                          <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                          View Details
+                          </button>
+                     </div>
+                  </div>
+              </div>
+      `;
+    });
+    document.getElementById("galleryGrid").innerHTML = html;
+  })
+         
+  .catch(err => console.error("Error loading sheet:", err));
 
-      <div class="gallery-item" data-year="2024">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-gray-900">Workshop</h3>
-            <p class="text-sm text-gray-500 mt-1">April 15, 2024</p>
-            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-year="2024">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-gray-900">Charity Event</h3>
-            <p class="text-sm text-gray-500 mt-1">June 22, 2024</p>
-            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-year="2023">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-          <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-          <div class="p-5">
-            <h3 class="text-lg font-semibold text-gray-900">Opening Ceremony</h3>
-            <p class="text-sm text-gray-500 mt-1">February 3, 2023</p>
-            <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </script>
+  
   </main>
 
 <script>
@@ -145,19 +110,4 @@
 </body>
 </html>
 
-<script>
-  const firebaseConfig = {
-  apiKey: "AIzaSyACMZk8xnVZhMMAPkVCgY4r_w5bwuzGvL8",
-  authDomain: "hub-inovasi.firebaseapp.com",
-  projectId: "hub-inovasi",
-  storageBucket: "hub-inovasi.firebasestorage.app",
-  messagingSenderId: "83629926834",
-  appId: "1:83629926834:web:f45c74e1becac672d29cab",
-  measurementId: "G-BE5W2FDKS3"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-</script>
 
