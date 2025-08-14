@@ -8,110 +8,106 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- HEADER -->
+  <!-- HEADER -->
   <header class="bg-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center bg-white/70 backdrop-blur-sm">
-        <div class="flex items-center space-x-3">
-            <img src="img/jata.png" alt="Logo" class="h-10 w-10 object-contain">
-            <h1 class="text-2xl font-bold text-blue-600">Hub Inovasi</h1>
-        </div>
-        <!-- Navigation -->
-        <nav class="space-x-6">
-            <a href="#about" class="hover:text-blue-600">Info</a>
-            <a href="#arkib" class="hover:text-blue-600">Arkib</a>
-        </nav>
+      <div class="flex items-center space-x-3">
+        <img src="img/jata.png" alt="Logo" class="h-10 w-10 object-contain">
+        <h1 class="text-2xl font-bold text-blue-600">Hub Inovasi</h1>
       </div>
+      <nav class="space-x-6">
+        <a href="#about" class="hover:text-blue-600">Info</a>
+        <a href="#arkib" class="hover:text-blue-600">Arkib</a>
+      </nav>
+    </div>
   </header>
 
   <!-- Page Sub-Header -->
-<header class="bg-gradient-to-r from-blue-50 via-white to-blue-50 shadow-inner border-b border-blue-100">
-  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center sm:text-left">
-    <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
-      KIK
-    </h1>
-    <p class="mt-2 text-lg text-gray-600">
-      Browse our events and moments through the years
-    </p>
-  </div>
-</header>
-
+  <header class="bg-gradient-to-r from-blue-50 via-white to-blue-50 shadow-inner border-b border-blue-100">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center sm:text-left">
+      <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+        KIK
+      </h1>
+      <p class="mt-2 text-lg text-gray-600">
+        Browse our events and moments through the years
+      </p>
+    </div>
+  </header>
 
   <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
     <!-- Timeline Filter -->
     <div id="yearButtons" class="flex justify-center gap-4 mb-10">
-        <button data-year="all" class="year-btn px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">All</button>
-        <button data-year="2025" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2025</button>
-        <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
-        <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
+      <button data-year="all" class="year-btn px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">All</button>
+      <button data-year="2025" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2025</button>
+      <button data-year="2024" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2024</button>
+      <button data-year="2023" class="year-btn px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">2023</button>
     </div>
-        <!-- Gallery Grid -->
+
+    <!-- Gallery Grid -->
     <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-
-    <script>
-       const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
-       fetch(sheetURL)
-          .then(res => res.text())
-          .then(text => {
-           const json = JSON.parse(text.substr(47).slice(0, -2));
-           const rows = json.table.rows;
-           let html = "";
-
-              rows.forEach(row => {
-                const name = row.c[0]?.v || "";
-                const year = row.c[1]?.v || "";
-                const group = row.c[2]?.v || "";
-                const description = row.c[3]?.v || "";
-                const image = row.c[4]?.v || "";
-              html += `
-               <div class="gallery-item" data-year="${year}">
-                   <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-                     <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
-                     <div class="p-5">
-                          <h3 class="text-lg font-semibold text-gray-900">${name} (${year})</h3>
-                          <p class="text-sm text-gray-500 mt-1">${group}</p>
-                          <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                          View Details
-                          </button>
-                     </div>
-                  </div>
-              </div>
-      `;
-    });
-    document.getElementById("galleryGrid").innerHTML = html;
-  })
-         
-  .catch(err => console.error("Error loading sheet:", err));
-
-    </script>
-  
   </main>
 
-<script>
-  const buttons = document.querySelectorAll(".year-btn");
-  const items = document.querySelectorAll(".gallery-item");
+  <script>
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      // Update active button styles
-      buttons.forEach(b => b.classList.remove("bg-blue-600", "text-white"));
-      buttons.forEach(b => b.classList.add("bg-gray-200", "text-gray-700"));
-      btn.classList.add("bg-blue-600", "text-white");
-      btn.classList.remove("bg-gray-200", "text-gray-700");
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.split("\n").map(r => r.split(","));
+        let html = "";
 
-      const year = btn.getAttribute("data-year");
+        // Skip header row (index 0)
+        rows.slice(1).forEach(row => {
+          const name = row[0] || "";
+          const year = row[1] || "";
+          const group = row[2] || "";
+          const description = row[3] || "";
+          const image = row[4] || "https://via.placeholder.com/400x250";
 
-      items.forEach(item => {
-        if (year === "all" || item.getAttribute("data-year") === year) {
-          item.style.display = "block";
-        } else {
-          item.style.display = "none";
-        }
-      });
-    });
-  });
-</script>
+          html += `
+            <div class="gallery-item" data-year="${year.trim()}">
+              <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+                <img src="${image.trim()}" alt="${name}" class="w-full h-48 object-cover rounded-t-lg">
+                <div class="p-5">
+                  <h3 class="text-lg font-semibold text-gray-900">${name} (${year})</h3>
+                  <p class="text-sm text-gray-500 mt-1">${group}</p>
+                  <p class="text-sm text-gray-600 mt-2">${description}</p>
+                  <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        document.getElementById("galleryGrid").innerHTML = html;
+
+        // Activate filter buttons
+        const buttons = document.querySelectorAll(".year-btn");
+        const items = document.querySelectorAll(".gallery-item");
+
+        buttons.forEach(btn => {
+          btn.addEventListener("click", () => {
+            buttons.forEach(b => b.classList.remove("bg-blue-600", "text-white"));
+            buttons.forEach(b => b.classList.add("bg-gray-200", "text-gray-700"));
+            btn.classList.add("bg-blue-600", "text-white");
+            btn.classList.remove("bg-gray-200", "text-gray-700");
+
+            const year = btn.getAttribute("data-year");
+            items.forEach(item => {
+              if (year === "all" || item.getAttribute("data-year") === year) {
+                item.style.display = "block";
+              } else {
+                item.style.display = "none";
+              }
+            });
+          });
+        });
+
+      })
+      .catch(err => console.error("Error loading sheet:", err));
+  </script>
 
 </body>
 </html>
-
-
