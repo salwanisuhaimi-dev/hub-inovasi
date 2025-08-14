@@ -62,8 +62,9 @@
                 const group = row.c[2]?.v || "";
                 const description = row.c[3]?.v || "";
                 const image = row.c[4]?.v || "";
+                const year = row.c[5]?.v || "";
               html += `
-               <div class="gallery-item" data-year="${image}">
+               <div class="gallery-item" data-year="${year}">
                    <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
                      <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
                      <div class="p-5">
