@@ -53,16 +53,22 @@
           .then(res => res.text())
           .then(text => {
            const json = JSON.parse(text.substr(47).slice(0, -2));
+           const rows = json.table.rows;
            let html = "";
 
-              json.table.rows.forEach(row => {
+              rows.forEach(row => {
+                const name = row.c[0]?.v || "";
+                const year = row.c[1]?.v || "";
+                const group = row.c[2]?.v || "";
+                const description = row.c[3]?.v || "";
+                const image = row.c[4]?.v || "";
               html += `
-               <div class="gallery-item" data-year="${row.c[5].v}">
+               <div class="gallery-item" data-year="${image}">
                    <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
                      <img src="https://via.placeholder.com/400x250" alt="Gallery Item" class="w-full h-48 object-cover rounded-t-lg">
                      <div class="p-5">
-                          <h3 class="text-lg font-semibold text-gray-900">${row.c[0].v} (${row.c[1].v})</h3>
-                          <p class="text-sm text-gray-500 mt-1">${row.c[3].v}</p>
+                          <h3 class="text-lg font-semibold text-gray-900">${name} (${year})</h3>
+                          <p class="text-sm text-gray-500 mt-1">${group}</p>
                           <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                           View Details
                           </button>
