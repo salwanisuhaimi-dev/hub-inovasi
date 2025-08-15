@@ -55,78 +55,82 @@
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
 
     fetch(sheetURL)
-      .then(res => res.text())
-      .then(csv => {
+  .then(res => res.text())
+  .then(csv => {
 
+    // CSV parser yang handle koma dalam quotes
     function parseCSVLine(line) {
       const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
       let match;
       const result = [];
       while ((match = regex.exec(line)) !== null) {
-        let value = match[0].replace(/^"|"$/g, "");
+        let value = match[0].replace(/^"|"$/g, ""); // buang tanda kutip
         result.push(value);
       }
       return result;
     }
 
-    const allRows = csv.split("\n").map(parseCSVLine);
+    const allRows = csv.split("\n").filter(line => line.trim() !== "").map(parseCSVLine);
 
-    // Ambil header (row pertama)
-    const header = allRows[0];
+    if (allRows.length === 0) {
+      console.error("CSV kosong atau tidak terbaca.");
+      return;
+    }
+
+    // Ambil header dari row pertama
+    const header = allRows[0].map(h => h.trim());
     const dataRows = allRows.slice(1);
 
-    // Convert setiap row ke object berdasarkan header
+    // Convert setiap row jadi object
     const rows = dataRows.map(cols => {
-    const obj = {};
+      const obj = {};
       header.forEach((colName, idx) => {
-        obj[colName.trim()] = cols[idx] || "";
+        obj[colName] = cols[idx] || "";
       });
 
-      // Pastikan tahun betul di column "Year"
+      // Pastikan Year ada
       if (!/^\d{4}$/.test(obj.Year || "")) {
-        const match = obj.Name.match(/^(.*)\s(\d{4})$/);
-        if (match) {
-          obj.Name = match[1];
-          obj.Year = match[2];
+        if (obj.Name && typeof obj.Name === "string") {
+          const match = obj.Name.match(/^(.*)\s(\d{4})$/);
+          if (match) {
+            obj.Name = match[1];
+            obj.Year = match[2];
+          }
         }
       }
+
       return obj;
     });
+
+    // --- Generate HTML ---
     let html = "";
-
-        // Skip header row (index 0)
-        rows.forEach(row => {
-          const name = row[1] || "";
-          const group = row[2] || "";
-          const image = row[3] || "https://via.placeholder.com/400x250";
-          const category = row[4] || "";
-          const year = row[row.length - 1] || "";
-
-          if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
-
-          html += `
-            <div class="gallery-item" data-year="${(row.tahun || "").trim()}">
-              <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-                <img src="img/${image.trim()}" alt="${row.nama}" class="w-full h-48 object-cover rounded-t-lg">
-                <div class="p-5">
-                  <h3 class="text-lg font-semibold text-gray-900">${name} ${year.trim()}</h3>
-                  <p class="text-sm text-gray-500 mt-1">${group}</p>
-                  <p class="text-sm text-gray-600 mt-2">${category}</p>
-                  <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    View Details
-                  </button>
-                </div>
+    rows.forEach(row => {
+      if (!selectedCategory || (row.Category || "").trim().toLowerCase() === selectedCategory.toLowerCase()) {
+        html += `
+          <div class="gallery-item" data-year="${(row.Year || "").trim()}">
+            <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
+              <img src="img/${(row.Image || "").trim()}" alt="${row.Name}" class="w-full h-48 object-cover rounded-t-lg">
+              <div class="p-5">
+                <h3 class="text-lg font-semibold text-gray-900">${row.Name}</h3>
+                <p class="text-sm text-gray-500 mt-1">${row.Group}</p>
+                <p class="text-sm text-gray-600 mt-2">${row.Category}</p>
+                <p class="text-sm text-gray-600 mt-2">${row.Description}</p>
+                <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                  View Details
+                </button>
               </div>
             </div>
-          `;
-          }
-        });
+          </div>
+        `;
+      }
+    });
 
-        document.getElementById("galleryGrid").innerHTML = html;
-
-        if (selectedCategory) {
-          document.getElementById("categoryTitle").textContent = selectedCategory + " Gallery";
-        }
+    // Masukkan HTML ke gallery container
+    // document.getElementById("gallery").innerHTML = html;
+  })
+  .catch(err => {
+    console.error("Error loading sheet:", err);
+  });
 
         // Activate filter buttons
         const buttons = document.querySelectorAll(".year-btn");
