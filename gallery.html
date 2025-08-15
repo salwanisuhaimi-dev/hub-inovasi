@@ -95,7 +95,7 @@
     let html = "";
 
         // Skip header row (index 0)
-        rows.slice(1).forEach(row => {
+        rows.forEach(row => {
           const name = row[1] || "";
           const group = row[2] || "";
           const image = row[3] || "https://via.placeholder.com/400x250";
@@ -105,9 +105,9 @@
           if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
 
           html += `
-            <div class="gallery-item" data-year="${year.trim()}">
+            <div class="gallery-item" data-year="${(row.tahun || "").trim()}">
               <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-                <img src="img/${image.trim()}" alt="${name}" class="w-full h-48 object-cover rounded-t-lg">
+                <img src="img/${image.trim()}" alt="${row.nama}" class="w-full h-48 object-cover rounded-t-lg">
                 <div class="p-5">
                   <h3 class="text-lg font-semibold text-gray-900">${name} ${year.trim()}</h3>
                   <p class="text-sm text-gray-500 mt-1">${group}</p>
