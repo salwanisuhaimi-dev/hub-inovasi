@@ -69,7 +69,7 @@
       return result;
     }
 
-    const rows = csv.split("\n").map(r => {
+    const rows = csv.split("\n").map((r, i) => {
       const cols = parseCSVLine(r);
 
  const lastCol = cols[cols.length - 1].trim();
