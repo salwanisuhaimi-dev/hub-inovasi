@@ -63,31 +63,36 @@
       let match;
       const result = [];
       while ((match = regex.exec(line)) !== null) {
-        let value = match[0].replace(/^"|"$/g, ""); // hapus tanda kutip
+        let value = match[0].replace(/^"|"$/g, "");
         result.push(value);
       }
       return result;
     }
 
-    const rows = csv.split("\n").map((r, i) => {
-      const cols = parseCSVLine(r);
+    const allRows = csv.split("\n").map(parseCSVLine);
 
- const lastCol = cols[cols.length - 1].trim();
-      if (!/^\d{4}$/.test(lastCol)) {
-        const match = cols[0].match(/^(.*)\s(\d{4})$/);
+    // Ambil header (row pertama)
+    const header = allRows[0];
+    const dataRows = allRows.slice(1);
+
+    // Convert setiap row ke object berdasarkan header
+    const rows = dataRows.map(cols => {
+    const obj = {};
+      header.forEach((colName, idx) => {
+        obj[colName.trim()] = cols[idx] || "";
+      });
+
+      // Pastikan tahun betul di column "Year"
+      if (!/^\d{4}$/.test(obj.Year || "")) {
+        const match = obj.Name.match(/^(.*)\s(\d{4})$/);
         if (match) {
-          cols[0] = match[1];
-          cols.push(match[2]);
-        } else {
-          cols.push("");
+          obj.Name = match[1];
+          obj.Year = match[2];
         }
       }
-
-      // Debug log setiap baris
-      console.log(`Row ${i}:`, cols);
-      return cols;
+      return obj;
     });
-      let html = "";
+    let html = "";
 
         // Skip header row (index 0)
         rows.slice(1).forEach(row => {
