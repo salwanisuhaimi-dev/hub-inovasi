@@ -97,7 +97,7 @@
           const group = row[2] || "";
           const image = row[3] || "https://via.placeholder.com/400x250";
           const category = row[4] || "";
-          const year = row[6] || "";
+          const year = row[row.length - 1] || "";
 
           if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
 
