@@ -57,20 +57,38 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(csv => {
-           const rows = csv.split("\n").map(r => {
-           const cols = r.split(","); // Pisahkan CSV jadi array kolom
 
-           // Pisahkan tahun dari kolom pertama kalau ada
-           const match = cols[0].match(/^(.*)\s(\d{4})$/);
-           if (match) {
-                cols[0] = match[1];   // Kolom pertama = nama tanpa tahun
-                cols.push(match[2]);  // Tambahkan tahun di kolom terakhir
-           } else {
-                cols.push(""); // Kalau nggak ada tahun, tetap tambahkan kolom kosong
-           }
+    function parseCSVLine(line) {
+      const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+      let match;
+      const result = [];
+      while ((match = regex.exec(line)) !== null) {
+        let value = match[0].replace(/^"|"$/g, ""); // hapus tanda kutip
+        result.push(value);
+      }
+      return result;
+    }
 
-            return cols;
-      });
+    const rows = csv.split("\n").map(r => {
+      const cols = parseCSVLine(r);
+
+      // Kalau tahun ada di kolom terakhir, biarkan
+      const lastCol = cols[cols.length - 1].trim();
+      if (/^\d{4}$/.test(lastCol)) {
+        return cols;
+      }
+
+      // Kalau tidak ada tahun, cek kolom pertama
+      const match = cols[0].match(/^(.*)\s(\d{4})$/);
+      if (match) {
+        cols[0] = match[1];   // nama tanpa tahun
+        cols.push(match[2]);  // tahun
+      } else {
+        cols.push(""); // kolom tahun kosong
+      }
+
+      return cols;
+    });
       let html = "";
 
         // Skip header row (index 0)
