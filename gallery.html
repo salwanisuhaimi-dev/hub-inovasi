@@ -57,7 +57,7 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(csv => {
-           const rows = csv.split("\n").map(r => r.split(","));
+           const rows = csv.split("\n").map(r => r.match(/^(.*)\s(\d{4})$/).slice(1));
            let html = "";
 
         // Skip header row (index 0)
