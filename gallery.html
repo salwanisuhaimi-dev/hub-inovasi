@@ -72,21 +72,19 @@
     const rows = csv.split("\n").map(r => {
       const cols = parseCSVLine(r);
 
-      // Kalau tahun ada di kolom terakhir, biarkan
-      const lastCol = cols[cols.length - 1].trim();
-      if (/^\d{4}$/.test(lastCol)) {
-        return cols;
+ const lastCol = cols[cols.length - 1].trim();
+      if (!/^\d{4}$/.test(lastCol)) {
+        const match = cols[0].match(/^(.*)\s(\d{4})$/);
+        if (match) {
+          cols[0] = match[1];
+          cols.push(match[2]);
+        } else {
+          cols.push("");
+        }
       }
 
-      // Kalau tidak ada tahun, cek kolom pertama
-      const match = cols[0].match(/^(.*)\s(\d{4})$/);
-      if (match) {
-        cols[0] = match[1];   // nama tanpa tahun
-        cols.push(match[2]);  // tahun
-      } else {
-        cols.push(""); // kolom tahun kosong
-      }
-
+      // Debug log setiap baris
+      console.log(`Row ${i}:`, cols);
       return cols;
     });
       let html = "";
