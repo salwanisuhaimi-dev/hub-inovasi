@@ -57,8 +57,21 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(csv => {
-           const rows = csv.split("\n").map(r => r.match(/^(.*)\s(\d{4})$/).slice(1));
-           let html = "";
+           const rows = csv.split("\n").map(r => {
+           const cols = r.split(","); // Pisahkan CSV jadi array kolom
+
+           // Pisahkan tahun dari kolom pertama kalau ada
+           const match = cols[0].match(/^(.*)\s(\d{4})$/);
+           if (match) {
+                cols[0] = match[1];   // Kolom pertama = nama tanpa tahun
+                cols.push(match[2]);  // Tambahkan tahun di kolom terakhir
+           } else {
+                cols.push(""); // Kalau nggak ada tahun, tetap tambahkan kolom kosong
+           }
+
+            return cols;
+      });
+      let html = "";
 
         // Skip header row (index 0)
         rows.slice(1).forEach(row => {
