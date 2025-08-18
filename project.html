@@ -5,9 +5,25 @@
   <title>Gallery Detail</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+<body class="bg-gray-50 text-gray-800">
+    <!-- HEADER -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center bg-white/70 backdrop-blur-sm">
+      <div class="flex items-center space-x-3">
+        <img src="img/jata.png" alt="Logo" class="h-10 w-10 object-contain">
+        <a href="index.html" class="no-underline text-gray-800 hover:text-gray-800">
+          <h1 class="text-2xl font-bold text-blue-600">Hub Inovasi</h1>
+        </a>
+      </div>
+      <nav class="space-x-6">
+        <a href="#about" class="hover:text-blue-600">Info</a>
+        <a href="#arkib" class="hover:text-blue-600">Arkib</a>
+      </nav>
+    </div>
+  </header>
 
-  <div class="max-w-6xl w-full bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-8">
+  <main class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-6xl w-full bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-8">
     
     <!-- Left: Image Gallery -->
     <div>
@@ -49,6 +65,7 @@
       </div>
     </div>
   </div>
+  </main>
 
   <script>
     function setMainImage(src) {
