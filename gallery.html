@@ -48,33 +48,31 @@
     <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
   </main>
 
-  <script>
-    // Get category from URL
-    const params = new URLSearchParams(window.location.search);
-    const selectedCategory = params.get("category");
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const selectedCategory = params.get("category");
 
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
 
-    function loadGallery() {
-        fetch(sheetURL)
-          .then(res => res.text())
-          .then(csv => {
-              const results = Papa.parse(csv, {
-                header: true,
-                skipEmptyLines: true
-              });
-                                         
-              let html = "";
+  function loadGallery() {
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(csv => {
+        const results = Papa.parse(csv, {
+          header: true,
+          skipEmptyLines: true
+        });
 
-              results.data.forEach(row => {
-                const name = row.nama || "";
-                const year = row.tahun || "";
-                const group = row.kumpulan || "";
-                const description = row.penerangan || "";
-                const image = row.thumbnail || "https://via.placeholder.com/400x250";
-                const category = row.kategori || "";
+        let html = "";
 
-          // Show only items that match the category (if provided)
+        results.data.forEach(row => {
+          const name = row.nama || "";
+          const year = row.tahun || "";
+          const group = row.kumpulan || "";
+          const description = row.penerangan || "";
+          const image = row.thumbnail || "https://via.placeholder.com/400x250";
+          const category = row.kategori || "";
+
           if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
             html += `
               <div class="gallery-item" data-year="${year.trim()}">
@@ -93,12 +91,10 @@
 
         document.getElementById("galleryGrid").innerHTML = html;
 
-        // Update title
         if (selectedCategory) {
           document.getElementById("categoryTitle").textContent = selectedCategory + " Gallery";
         }
 
-        // Filter by year buttons
         const buttons = document.querySelectorAll(".year-btn");
         const items = document.querySelectorAll(".gallery-item");
 
@@ -121,7 +117,9 @@
         });
       })
       .catch(err => console.error("Error loading sheet:", err));
-  </script>
+  } // ✅ closes function properly
+</script>
+
 
 </body>
 </html>
