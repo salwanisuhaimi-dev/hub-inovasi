@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gallery</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -47,7 +48,6 @@
     <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
   </main>
 
-  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     // Get category from URL
     const params = new URLSearchParams(window.location.search);
@@ -55,20 +55,24 @@
 
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/pub?gid=0&single=true&output=csv";
 
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(csv => {
-        const rows = csv.split("\n").map(r => r.split(","));
-        let html = "";
+    function loadGallery() {
+        fetch(sheetURL)
+          .then(res => res.text())
+          .then(csv => {
+              const results = Papa.parse(csv, {
+                header: true,
+                skipEmptyLines: true
+              });
+                                         ;
+              let html = "";
 
-        // Skip header row
-        rows.slice(1).forEach(row => {
-          const name = row[1] || "";
-          const year = row[6] || "";
-          const group = row[2] || "";
-          const description = row[5] || "";
-          const image = row[3] || "https://via.placeholder.com/400x250";
-          const category = row[4] || ""; // New: category column
+              results.data.forEach(row => {
+                const name = row.nama || "";
+                const year = row.tahun || "";
+                const group = row.kumpulan || "";
+                const description = row.penerangan || "";
+                const image = row.thumbnail || "https://via.placeholder.com/400x250";
+                const category = row.kategori || "";
 
           // Show only items that match the category (if provided)
           if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
