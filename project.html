@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gallery Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+
+  <div class="max-w-6xl w-full bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-8">
+    
+    <!-- Left: Image Gallery -->
+    <div>
+      <img id="mainImage" src="https://via.placeholder.com/600x400" alt="Project Image" 
+           class="w-full h-96 object-cover rounded-lg border">
+
+      <!-- Thumbnails -->
+      <div class="flex gap-3 mt-4">
+        <img src="https://via.placeholder.com/150" 
+             class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
+             onclick="setMainImage(this.src)">
+        <img src="https://via.placeholder.com/150" 
+             class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
+             onclick="setMainImage(this.src)">
+        <img src="https://via.placeholder.com/150" 
+             class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
+             onclick="setMainImage(this.src)">
+      </div>
+    </div>
+
+    <!-- Right: Project Info -->
+    <div class="flex flex-col justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">{Project title}</h1>
+        <div class="flex justify-between text-gray-600 mb-4">
+          <span>{year}</span>
+          <span>{achievement}</span>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-800 mb-1">{group name}</h2>
+        <p class="text-gray-600">{description goes here}</p>
+      </div>
+
+      <!-- Back button -->
+      <div class="mt-6">
+        <a href="index.html" 
+           class="inline-block bg-gray-800 text-white px-6 py-2 rounded shadow hover:bg-gray-700">
+          Kembali
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setMainImage(src) {
+      document.getElementById("mainImage").src = src;
+    }
+  </script>
+</body>
+</html>
