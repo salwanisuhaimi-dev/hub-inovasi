@@ -46,6 +46,18 @@
             const row = results.data.find(r => r.id === projectId);
 
             if (row) {
+
+              const baseName = row.thumbnail.trim();
+              const totalImages = 3;
+              let thumbnailsHTML = "";
+
+              for (let i = 1; i <= totalImages; i++) {
+                thumbnailsHTML += `
+                  <img src="img/${baseName} (${i}).jpg" 
+                       class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
+                       onclick="setMainImage(this.src)">
+                  `;
+              }
               document.getElementById("details").innerHTML = `
                  <!-- Left: Image Gallery -->
                  <div>
@@ -53,16 +65,8 @@
                            class="w-full h-96 object-cover rounded-lg border">
                       <!-- Thumbnails -->
                       <div class="flex gap-3 mt-4">
-                           <img src="https://via.placeholder.com/150" 
-                                class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
-                                onclick="setMainImage(this.src)">
-                           <img src="https://via.placeholder.com/150" 
-                                class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
-                                onclick="setMainImage(this.src)">
-                           <img src="https://via.placeholder.com/150" 
-                                class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80"
-                                onclick="setMainImage(this.src)">
-                       </div>
+                           ${thumbnailsHTML}
+                      </div>
                  </div>
 
                  <!-- Right: Project Info -->
