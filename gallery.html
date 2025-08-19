@@ -66,6 +66,7 @@
         let html = "";
 
         results.data.forEach(row => {
+          const id = row.id || "";
           const name = row.nama || "";
           const year = row.tahun || "";
           const group = row.kumpulan || "";
@@ -75,6 +76,7 @@
 
           if (!selectedCategory || category.trim().toLowerCase() === selectedCategory.toLowerCase()) {
             html += `
+            <a href="project.html?id=${id}" class="no-underline text-gray-800 hover:text-gray-800">
               <div class="gallery-item" data-year="${year.trim()}">
                 <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
                   <img src="img/${image.trim()}" alt="${name}" class="w-full h-48 object-cover rounded-t-lg">
@@ -85,6 +87,7 @@
                   </div>
                 </div>
               </div>
+            </a>
             `;
           }
         });
@@ -121,6 +124,8 @@
 
   loadGallery();
 </script>
+
+</body>
 
 
 </body>
