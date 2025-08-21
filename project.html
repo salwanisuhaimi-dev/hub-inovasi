@@ -93,30 +93,17 @@
 
                        <div class="flex-grow flex items-center">
                           <div>
-  <!-- Like button -->
-  <button id="likeBtn" class="flex items-center gap-2 text-gray-700 hover:text-green-600">
-    <!-- Thumbs Up Outline -->
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-         stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                              <button id="likeBtn" class="flex items-center gap-2 text-gray-700 hover:text-red-600">
+    <!-- Heart Outline -->
+    <svg id="heartIcon" xmlns="http://www.w3.org/2000/svg" fill="none" 
+         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" 
+         class="w-8 h-8 transition-colors">
       <path stroke-linecap="round" stroke-linejoin="round" 
-            d="M14 10h4.764a2 2 0 011.789 2.894l-3.528 7.057A2 2 0 0115.263 21H9a2 2 0 01-2-2v-6.586a1 1 0 01.293-.707l5-5a1 1 0 011.707.707V10z" />
-      <path stroke-linecap="round" stroke-linejoin="round" 
-            d="M7 10v11" />
+            d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+               2 6 4 4 6.5 4c1.74 0 3.41 1 4.22 2.44h.56C14.09 5 15.76 4 17.5 4 
+               20 4 22 6 22 8.5c0 3.78-3.4 6.86-8.55 11.18L12 21z"/>
     </svg>
     <span id="likeCount">0</span>
-  </button>
-
-  <!-- Dislike button -->
-  <button id="dislikeBtn" class="flex items-center gap-2 text-gray-700 hover:text-red-600">
-    <!-- Thumbs Down Outline -->
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-         stroke-width="2" stroke="currentColor" class="w-8 h-8">
-      <path stroke-linecap="round" stroke-linejoin="round" 
-            d="M10 14H5.236a2 2 0 01-1.789-2.894l3.528-7.057A2 2 0 018.737 3H15a2 2 0 012 2v6.586a1 1 0 01-.293.707l-5 5a1 1 0 01-1.707-.707V14z" />
-      <path stroke-linecap="round" stroke-linejoin="round" 
-            d="M17 14V3" />
-    </svg>
-    <span id="dislikeCount">0</span>
   </button>
                                <hr class="my-6 border-gray-300">
                                <h3 class="text-gray-600" style="font-weight: bold; margin-bottom: 10px">Penerangan Projek: </h3>
