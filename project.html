@@ -24,8 +24,13 @@
   </header>
 
   <main class="flex items-center justify-center p-6 my-0">
-      <div class="max-w-6xl w-full bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-8" id="details">
-
+      <div class="max-w-6xl w-full bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-8" id="details"></div>
+      <div id="slideshowModal" 
+           class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50">
+           <button id="closeBtn" class="absolute top-5 right-5 text-white text-3xl">&times;</button>
+           <button id="prevBtn" class="absolute left-5 text-white text-4xl">&#10094;</button>
+           <img id="slideshowImage" class="max-h-[90%] max-w-[90%] rounded-lg shadow-lg">
+           <button id="nextBtn" class="absolute right-5 text-white text-4xl">&#10095;</button>
       </div>
   </main>
 
@@ -122,7 +127,48 @@
             } else {
               document.getElementById("details").innerHTML = "<p class='text-red-500'>Item not found.</p>";
             }
+
+                    /** Slideshow Logic **/
+        const images = Array.from({ length: totalImages }, (_, i) => `img/${baseName} (${i+1}).jpg`);
+        let currentIndex = 0;
+
+        const mainImage = document.getElementById("mainImage");
+        const modal = document.getElementById("slideshowModal");
+        const slideshowImage = document.getElementById("slideshowImage");
+        const closeBtn = document.getElementById("closeBtn");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        // Open modal
+        mainImage.addEventListener("click", () => {
+          currentIndex = 0;
+          slideshowImage.src = images[currentIndex];
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
         });
+
+        // Close modal
+        closeBtn.addEventListener("click", () => {
+          modal.classList.add("hidden");
+        });
+
+        // Next image
+        nextBtn.addEventListener("click", () => {
+          currentIndex = (currentIndex + 1) % images.length;
+          slideshowImage.src = images[currentIndex];
+        });
+
+        // Previous image
+        prevBtn.addEventListener("click", () => {
+          currentIndex = (currentIndex - 1 + images.length) % images.length;
+          slideshowImage.src = images[currentIndex];
+        });
+
+        // Close on background click
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.classList.add("hidden");
+        });
+      });
   </script>
 </body>
 </html>
