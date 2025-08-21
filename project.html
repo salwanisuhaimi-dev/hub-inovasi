@@ -93,6 +93,13 @@
 
                        <div class="flex-grow flex items-center">
                           <div>
+                               <button id="likeBtn" class="flex items-center gap-2 text-gray-700 hover:text-green-600">
+                                    👍 <span id="likeCount">0</span>
+                               </button>
+
+                               <button id="dislikeBtn" class="flex items-center gap-2 text-gray-700 hover:text-red-600">
+                                    👎 <span id="dislikeCount">0</span>
+                               </button>
                                <hr class="my-6 border-gray-300">
                                <h3 class="text-gray-600" style="font-weight: bold; margin-bottom: 10px">Penerangan Projek: </h3>
                                <p class="text-gray-600">${row.penerangan}</p>
