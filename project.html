@@ -49,11 +49,12 @@
       .then(csv => {
             const results = Papa.parse(csv, { header: true, skipEmptyLines: true });
             const row = results.data.find(r => r.id === projectId);
+            const totalImages = 3;
 
             if (row) {
 
               const baseName = row.thumbnail.trim();
-              const totalImages = 3;
+              
               let thumbnailsHTML = "";
 
               for (let i = 1; i <= totalImages; i++) {
