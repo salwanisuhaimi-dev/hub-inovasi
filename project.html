@@ -51,6 +51,8 @@
             const row = results.data.find(r => r.id === projectId);
             const totalImages = 3;
 
+            let baseName = "";
+
             if (row) {
 
               const baseName = row.thumbnail.trim();
