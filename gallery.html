@@ -52,7 +52,10 @@
   const params = new URLSearchParams(window.location.search);
   const selectedCategory = params.get("category");
 
-  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/export?format=csv&gid=0";
+  const sheetURL = "https://corsproxy.io/?" + encodeURIComponent(
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpim1tLE_YzeFsEAKmi92Irs2_WWAj1A73LlJZZ8S5qac3Rkv7U7ld4xc-0vYvtqTna9TpyIMMZhQF/export?format=csv&gid=0"
+  );
+
 
   function loadGallery() {
     fetch(sheetURL)
