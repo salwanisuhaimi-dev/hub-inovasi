@@ -16,5 +16,6 @@ class Quiz extends Model
         'extras',
         'created_at',
         'updated_at',
+        'quiz_type'
     ];
 }

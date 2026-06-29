@@ -19,6 +19,7 @@ state([
     'end_date' => '',
     'start_time' => '',
     'end_time' => '',
+    'time_limit' => '',
     'location' => '',
     'description' => '',
     'deadline' => '',
@@ -36,6 +37,7 @@ $edit = function (Program $program) {
     $this->end_date = $program->end_date;
     $this->start_time = $program->start_time;
     $this->end_time = $program->end_time;
+    $this->time_limit = $program->time_limit;
     $this->location = $program->location;
     $this->description = $program->description;
     $this->deadline = $program->deadline;
@@ -69,6 +71,7 @@ $save = function () {
         'end_date' => $this->end_date ?: null,
         'start_time' => $this->start_time ?: null,
         'end_time' => $this->end_time ?: null,
+        'time_limit' => $this->time_limit ? : null,
         'location' => $this->location ?: null,
         'description' => $this->description ?: null,
         'deadline' => $this->deadline,
@@ -137,7 +140,7 @@ $delete = function ($id) {
 };
 
 $openCreateModal = function() {
-    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id']);
+    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'time_limit', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id']);
     $this->showModal = true;
 };
 
@@ -249,7 +252,7 @@ $openCreateModal = function() {
 
                         <div class="mt-4">
                             <label class="block text-sm font-bold text-gray-700 mb-2 italic">Kategori</label>
-                            <select wire:model="category_id" class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
+                            <select wire:model.live="category_id" class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                                 <option value="">Pilih Kategori</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -278,6 +281,44 @@ $openCreateModal = function() {
                                 <input type="time" wire:model="end_time" class="w-full rounded-xl border-gray-200">
                             </div>
                         </div>
+
+                        @if($category_id == 3)
+                        <div x-data="{ show: false }"
+                                x-init="setTimeout(() => show = true, 50)"
+                                x-show="show"
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                x-transition:enter-end="opacity-100 transform translate-y-0"
+                                class="mt-4">
+
+                              <div class="flex justify-between items-center mb-2">
+                                  <label class="block text-xs font-black text-gray-400 uppercase mb-1">Had Masa Kuiz</label>
+                                  <span class="text-xs text-gray-400 font-semibold bg-gray-100 px-2.5 py-1 rounded-full">Pilihan (Optional)</span>
+                              </div>
+
+                              <div class="relative flex items-center shadow-sm rounded-2xl">
+                                   <input type="number"
+                                            wire:model="time_limit"
+                                            placeholder="Tiada had masa (Sila isi jika ada)"
+                                            min="1"
+                                            class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4 pr-20 transition-all text-gray-900 font-medium">
+
+                                    <div class="absolute right-4 flex items-center pointer-events-none border-l border-gray-200 pl-3">
+                                         <span class="font-bold text-sm text-gray-400">
+                                              Minit
+                                          </span>
+                                    </div>
+                               </div>
+                               @error('time_limit')
+                               <span class="text-red-500 text-xs font-semibold mt-1 block flex items-center">
+                                     <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                      </svg>
+                                      {{ $message }}
+                               </span>
+                               @enderror
+                        </div>
+                        @endif
 
                         <div>
                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Tarikh Tutup</label>

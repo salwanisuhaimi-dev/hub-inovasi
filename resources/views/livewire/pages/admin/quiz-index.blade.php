@@ -3,7 +3,7 @@
 use App\Models\Quiz;
 use function Livewire\Volt\{layout, state, with, usesFileUploads};
 
-layout('layouts.app'); 
+layout('layouts.app');
 usesFileUploads();
 
 state([
@@ -13,9 +13,10 @@ state([
     'option_a' => '',
     'option_b' => '',
     'option_c' => '',
-    'option_d' => '',   
+    'option_d' => '',
     'correct_answer' => '',
     'extras' => '',
+    'currentTab' => 'pop'
 ]);
 
 $edit = function (Quiz $quiz) {
@@ -32,8 +33,10 @@ $edit = function (Quiz $quiz) {
     $this->showModal = true;
 };
 
-with([
-    'quizzes' => fn() => Quiz::latest()->get(),
+with(fn () => [
+    'quizzes' => Quiz::where('quiz_type', $this->currentTab)
+                     ->latest()
+                     ->get()
 ]);
 
 $save = function () {
@@ -41,8 +44,8 @@ $save = function () {
         'question' => 'required',
         'option_a' => 'required',
         'option_b' => 'required',
-        'option_c' => 'required', 
-        'option_d' => 'required', 
+        'option_c' => 'required',
+        'option_d' => 'required',
         'correct_answer' => 'required',
         'extras' => 'required',
     ]);
@@ -66,7 +69,7 @@ $save = function () {
         session()->flash('message', 'Kuiz berjaya disimpan!');
     }
 
-    $this->reset(); 
+    $this->reset();
     $this->showModal = false;
     session()->flash('message', 'Kuiz berjaya disimpan!');
 };
@@ -91,6 +94,22 @@ $openCreateModal = function() {
             Tambah Kuiz
         </button>
     </div>
+
+    <div class="mb-6 border-b border-gray-200">
+            <div class="flex space-x-8">
+                <button
+                    wire:click="$set('currentTab', 'pop')"
+                    class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'pop' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    Kuiz Kilat
+                </button>
+
+                <button
+                    wire:click="$set('currentTab', 'program')"
+                    class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'program' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    Program
+                </button>
+            </div>
+  </div>
 
     @if (session()->has('message'))
         <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 font-bold">
@@ -149,7 +168,7 @@ $openCreateModal = function() {
 
                         <td class="px-6 py-5 text-right">
                             <div class="flex justify-end gap-2">
-                                <button wire:click="edit({{ $quiz->id }})" 
+                                <button wire:click="edit({{ $quiz->id }})"
                                     class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                                     title="Edit Soalan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +176,7 @@ $openCreateModal = function() {
                                     </svg>
                                 </button>
 
-                                <button wire:click="delete({{ $quiz->id }})" 
+                                <button wire:click="delete({{ $quiz->id }})"
                                     wire:confirm="Adakah anda pasti mahu memadam soalan ini?"
                                     class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
                                     title="Padam Soalan">
@@ -188,16 +207,16 @@ $openCreateModal = function() {
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showModal', false)"></div>
-                
+
                 <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-8">
                     <h3 class="text-xl font-black text-gray-900 mb-6">
                         {{ $editing ? 'Kemaskini Kuiz' : 'Tambah Kuiz Baru' }}
                     </h3>
-                    
+
                     <form wire:submit.prevent="save" class="space-y-4">
                         <div>
                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Soalan</label>
-                            <textarea wire:model="question" rows="5" 
+                            <textarea wire:model="question" rows="5"
                                 class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                             </textarea>
                         </div>
@@ -223,7 +242,7 @@ $openCreateModal = function() {
                         </div>
                         <div>
                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Fakta Menarik</label>
-                             <textarea wire:model="extras" rows="5" 
+                             <textarea wire:model="extras" rows="5"
                                 class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                             </textarea>
 

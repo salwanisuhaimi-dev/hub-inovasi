@@ -28,6 +28,7 @@ class Program extends Model
         'image_path',
         'publication_id',
         'form_publication_id',
+        'time_limit'
     ];
 
     public function category()
