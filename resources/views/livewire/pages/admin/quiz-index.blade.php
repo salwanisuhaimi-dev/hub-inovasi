@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Quiz;
+use App\Models\Program;
 use function Livewire\Volt\{layout, state, with, usesFileUploads};
 
 layout('layouts.app');
@@ -36,7 +37,10 @@ $edit = function (Quiz $quiz) {
 with(fn () => [
     'quizzes' => Quiz::where('quiz_type', $this->currentTab)
                      ->latest()
-                     ->get()
+                     ->get(),
+    'programs' => Program::where('category_id', 3)
+                      ->latest()
+                      ->get(),
 ]);
 
 $save = function () {
@@ -82,34 +86,28 @@ $openCreateModal = function() {
 ?>
 
 <div class="p-6">
-    <div class="flex justify-between items-center mb-8">
+     <div class="flex justify-between items-center mb-8">
         <div>
             <h2 class="text-2xl font-black text-gray-900">Senarai Kuiz</h2>
             <p class="text-sm text-gray-500">Urus dan pantau semua kuiz anda di sini.</p>
         </div>
-        <button wire:click="openCreateModal" class="flex items-center px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Tambah Kuiz
-        </button>
+     </div>
+
+     <div class="mb-6 border-b border-gray-200">
+          <div class="flex space-x-8">
+              <button
+                  wire:click="$set('currentTab', 'pop')"
+                  class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'pop' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                  Kuiz Kilat
+              </button>
+
+              <button
+                  wire:click="$set('currentTab', 'program')"
+                  class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'program' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                  Program
+              </button>
+          </div>
     </div>
-
-    <div class="mb-6 border-b border-gray-200">
-            <div class="flex space-x-8">
-                <button
-                    wire:click="$set('currentTab', 'pop')"
-                    class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'pop' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                    Kuiz Kilat
-                </button>
-
-                <button
-                    wire:click="$set('currentTab', 'program')"
-                    class="pb-4 text-sm font-bold transition-all border-b-2 {{ $currentTab === 'program' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                    Program
-                </button>
-            </div>
-  </div>
 
     @if (session()->has('message'))
         <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 font-bold">
@@ -117,58 +115,67 @@ $openCreateModal = function() {
         </div>
     @endif
 
+    <button wire:click="openCreateModal" class="flex items-center px-5 py-2.5 my-5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+         </svg>
+        Tambah Kuiz
+    </button>
+
+    @if($currentTab === 'program')
+    <div class="mb-4 p-4 bg-blue-50 text-blue-700 rounded-xl border border-blue-100 text-sm font-medium">
+        ℹ️ Anda sedang melihat senarai kuiz di bawah kategori <strong>Other Program</strong>.
+    </div>
+
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead class="bg-gray-50/50">
                 <tr>
-                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Soalan & Pilihan</th>
-                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Jawapan Betul</th>
-                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Fakta Menarik</th>
+                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Program</th>
+                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Tarikh</th>
+                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Masa</th>
                     <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Tindakan</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50 bg-white">
-                @forelse($quizzes as $quiz)
+                @forelse($programs as $program)
                     <tr class="hover:bg-blue-50/30 transition-all duration-200 group">
-                        <td class="px-6 py-5">
-                            <div class="max-w-md">
-                                <div class="font-bold text-gray-900 mb-2 leading-snug line-clamp-3" title="{{ $quiz->question }}">
-                                    {{ $quiz->question }}
-                                </div>
-                                <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                                    <div class="text-m flex items-center gap-1.5">
-                                        <span class="font-black text-blue-500">A.</span>
-                                        <span class="text-gray-500 truncate" title="{{ $quiz->option_a }}">{{ $quiz->option_a }}</span>
-                                    </div>
-                                    <div class="text-m flex items-center gap-1.5">
-                                        <span class="font-black text-blue-500">B.</span>
-                                        <span class="text-gray-500 truncate" title="{{ $quiz->option_b }}">{{ $quiz->option_b }}</span>
-                                    </div>
-                                    <div class="text-m flex items-center gap-1.5">
-                                        <span class="font-black text-blue-500">C.</span>
-                                        <span class="text-gray-500 truncate" title="{{ $quiz->option_c }}">{{ $quiz->option_c }}</span>
-                                    </div>
-                                    <div class="text-m flex items-center gap-1.5">
-                                        <span class="font-black text-blue-500">D.</span>
-                                        <span class="text-gray-500 truncate" title="{{ $quiz->option_d }}">{{ $quiz->option_d }}</span>
-                                    </div>
-                                </div>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">{{ $program->title }}</div>
+                            <div class="text-xs text-gray-500 truncate w-48">{{ $program->description }}</div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-700 font-medium">
+                                {{ $program->start_date ? \Carbon\Carbon::parse($program->start_date)->format('d M Y') : 'Tiada Tarikh Mula' }}
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                @if($program->start_date && $program->end_date)
+                                    {{ \Carbon\Carbon::parse($program->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($program->end_date)->format('d M Y') }}
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-gray-500 mt-1 flex items-center">
+                                @if($program->start_time)
+                                    {{ \Carbon\Carbon::parse($program->start_time)->format('h:i A') }}
+                                    @if($program->end_time)
+                                        - {{ \Carbon\Carbon::parse($program->end_time)->format('h:i A') }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
                             </div>
                         </td>
 
-                        <td class="px-6 py-5 text-center uppercase">
-                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-green-50 text-green-600 font-black border border-green-100 shadow-sm">
-                                {{ $quiz->correct_answer }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                                {{ $quiz->extras }}
-                        </td>
-
-
                         <td class="px-6 py-5 text-right">
                             <div class="flex justify-end gap-2">
-                                <button wire:click="edit({{ $quiz->id }})"
+                                <a href="" class="p-2.5 bg-slate-50 hover:bg-amber-600 rounded-xl transition-all text-slate-400 hover:text-white group/btn relative">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover/btn:scale-100 transition-all bg-slate-900 text-white text-[9px] font-black px-2 py-1.5 rounded-lg shadow-xl uppercase whitespace-nowrap z-30">Urus Soalan</span>
+                                </a>
+
+                                <button wire:click=""
                                     class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                                     title="Edit Soalan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,8 +183,8 @@ $openCreateModal = function() {
                                     </svg>
                                 </button>
 
-                                <button wire:click="delete({{ $quiz->id }})"
-                                    wire:confirm="Adakah anda pasti mahu memadam soalan ini?"
+                                <button wire:click=""
+                                    wire:confirm=""
                                     class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
                                     title="Padam Soalan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,12 +201,20 @@ $openCreateModal = function() {
                                 <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 text-gray-300">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.364-6.364l-.707-.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 21V3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                                 </div>
-                                <span class="text-gray-400 font-medium">Tiada soalan ditemui.</span>
+                                <span class="text-gray-400 font-medium">Tiada program ditemui.</span>
                             </div>
                         </td>
                     </tr>
                 @endforelse
             </tbody>
+        </table>
+    </div>
+
+    @endif
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            @include('livewire.pages.admin.partials.quiz-table')
         </table>
     </div>
 

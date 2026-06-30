@@ -43,7 +43,9 @@ Route::get('/auth/google', function () {
 
 Route::get('/auth/google/callback', function () {
     try {
-        $googleUser = Socialite::driver('google')->user();
+        $googleUser = Socialite::driver('google')
+              ->setHttpClient(new \GuzzleHttp\Client(['verify' => false]))
+              ->user();
 
         $user = User::updateOrCreate([
             'email' => $googleUser->email,
@@ -67,7 +69,14 @@ Route::get('/auth/google/callback', function () {
 
         return redirect()->intended(route('user.dashboard'));
     } catch (\Exception $e) {
-        return redirect('/login')->with('error', 'Gagal log masuk.');
+        //return redirect('/login')->with('error', 'Gagal log masuk.');
+        //dd($e->getMessage(), $e->getTraceAsString());
+        dd([
+            'Error Message' => $e->getMessage(),
+            'Configured cURL Path' => ini_get('curl.cainfo'),
+            'Configured OpenSSL Path' => ini_get('openssl.cafile'),
+            'Does File Exist?' => file_exists(ini_get('curl.cainfo')) ? 'YES' : 'NO'
+        ]);
     }
 });
 
