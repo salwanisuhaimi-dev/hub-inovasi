@@ -45,4 +45,9 @@ class Program extends Model
     {
         return $this->belongsTo(Publication::class, 'form_publication_id');
     }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Quiz extends Model
 {
@@ -16,6 +17,13 @@ class Quiz extends Model
         'extras',
         'created_at',
         'updated_at',
-        'quiz_type'
+        'quiz_type',
+        'program_id'
     ];
+
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class);
+    }
 }
