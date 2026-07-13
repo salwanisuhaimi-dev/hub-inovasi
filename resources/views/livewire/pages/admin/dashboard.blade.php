@@ -124,19 +124,24 @@ with([
                 </div>
             </a>
 
-
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex items-center">
-                    <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <a href="{{ route('admin.pitch') }}" class="block transform transition hover:scale-[1.02] active:scale-95">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500 uppercase font-bold">Idea Inovasi</p>
+                            <h3 class="text-2xl font-black">{{ \App\Models\Pitch::count() }}</h3>
+                        </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500 uppercase font-bold">Idea Inovasi</p>
-                        <h3 class="text-2xl font-black">0</h3>
+                    <div class="mt-4 flex items-center text-xs text-blue-600 font-bold">
+                        <span>Lihat Semua</span>
+                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                 </div>
-            </div>
-      </div>
+            </a>
+       </div>
 
             <div class="mt-10">
                 <h3 class="text-xl font-black text-gray-900 mb-6">Penyertaan Mengikut Program</h3>

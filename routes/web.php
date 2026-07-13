@@ -170,6 +170,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         Volt::route('/publication', 'pages.admin.publication-index')
             ->name('admin.publication');
 
+        Volt::route('/pitch', 'pages.admin.pitch-index')
+            ->name('admin.pitch');
+
+
 
     });
 

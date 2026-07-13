@@ -89,6 +89,9 @@
                         <x-nav-link :href="route('admin.programs')" :active="request()->routeIs('admin.programs')" class="block w-full border-l-4" style="padding-left: 15px">
                             {{ __('Program') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.pitch')" :active="request()->routeIs('admin.pitch')" class="block w-full border-l-4" style="padding-left: 15px">
+                            {{ __('Idea Inovasi') }}
+                        </x-nav-link>
 
                         <div x-data="{ open: false }" class="w-full">
                             <button @click="open = !open"

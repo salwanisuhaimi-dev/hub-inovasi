@@ -360,7 +360,14 @@ $checkAnswer = function ($key) {
 </div>
 
     <div x-data="{ open: false }"
-            x-init="setTimeout(() => open = true, 800)"
+            x-init="const lastSeen = localStorage.getItem('promoLastSeen');
+                    const now = Date.now();
+                    const oneDay = 24 * 60 * 60 * 1000;
+
+                    if (!lastSeen || (now - lastSeen) > oneDay) {
+                        setTimeout(() => open = true, 800);
+                        localStorage.setItem('promoLastSeen', now);
+                    }"
             class="relative">
         <div x-show="open"
             class="fixed inset-0 z-[100] flex items-center justify-center p-6">

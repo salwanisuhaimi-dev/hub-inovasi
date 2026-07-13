@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Archive extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'department_id',
         'project_name',
@@ -19,8 +19,13 @@ class Archive extends Model
         'competition',
         'achievement',
         'thumbnail',
+        'image_paths',
         'video_link',
         'description',
+    ];
+
+    protected $casts = [
+        'image_paths' => 'array'
     ];
 
     public function department(): BelongsTo
@@ -31,7 +36,7 @@ class Archive extends Model
     public function competitions()
     {
         return $this->belongsToMany(Competition::class)
-                ->withPivot('achievement', 'year') 
+                ->withPivot('achievement', 'year')
                 ->withTimestamps();
     }
 }
