@@ -9,9 +9,20 @@ use function Livewire\Volt\{layout, with};
 layout('layouts.app');
 
 with([
+    'programs' => function() {
+        return Program::latest()
+            ->withCount(['submissions', 'quizSubmissions'])
+            ->get()
+            ->map(function ($program) {
+                if ($program->category_id == 3) {
+                    $program->submissions_count = $program->quiz_submissions_count;
+                }
 
-    // 2. Ambil program dan kira berapa submission untuk setiap satu
-    'programs' => fn() => Program::withCount('submissions')->latest()->get(),
+                unset($program->quiz_submissions_count);
+
+                return $program;
+            });
+    }
 ]);
 ?>
 
@@ -160,7 +171,7 @@ with([
                                     <p class="text-xs text-gray-500 font-bold uppercase tracking-tighter">Jumlah Penyertaan</p>
                                     <h3 class="text-3xl font-black text-blue-600">{{ $program->submissions_count }}</h3>
                                 </div>
-                                <a href="{{ route('admin.program.submissions', $program->id) }}" class="p-2 bg-gray-900 text-white rounded-xl hover:bg-blue-600 transition-colors">
+                                <a href="{{ $program->category_id == 3 ? route('admin.program.quiz-submissions', $program->id) : route('admin.program.submissions', $program->id) }}" class="p-2 bg-gray-900 text-white rounded-xl hover:bg-blue-600 transition-colors">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                                     </svg>

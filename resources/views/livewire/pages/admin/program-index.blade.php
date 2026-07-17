@@ -25,6 +25,7 @@ state([
     'deadline' => '',
     'image' => null,
     'currentImage' => '',
+    'competition_id' => '',
 ]);
 
 $edit = function (Program $program) {
@@ -43,6 +44,7 @@ $edit = function (Program $program) {
     $this->deadline = $program->deadline;
     $this->currentImage = $program->image_path ?? '';
     $this->image = null;
+    $this->competition_id = $program->competition_id;
 
     $this->showModal = true;
 };
@@ -50,6 +52,7 @@ $edit = function (Program $program) {
 with([
     'programs' => fn() => Program::latest()->get(),
     'categories' => fn() => \App\Models\ProgramType::where('is_active', '1')->orderBy('name')->get(),
+    'competitions' => fn() => \App\Models\Competition::latest()->get(),
 ]);
 
 $save = function () {
@@ -62,7 +65,8 @@ $save = function () {
         'start_date' => 'nullable|date',
         'deadline' => 'required|date',
         'end_date' => 'nullable|date|after_or_equal:start_date',
-        'image' => 'nullable|image|max:10420'
+        'image' => 'nullable|image|max:10420',
+        'competition_id' => 'nullable',
     ]);
 
     $payload = [
@@ -78,6 +82,7 @@ $save = function () {
         'publication_id' => $this->publication_id ?: null,
         'form_publication_id' => $this->form_publication_id ?: null,
         'category_id' => $this->category_id ?: null,
+        'competition_id' => $this->competition_id ?: null,
     ];
 
     if ($this->image) {
@@ -140,7 +145,7 @@ $delete = function ($id) {
 };
 
 $openCreateModal = function() {
-    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'time_limit', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id']);
+    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'time_limit', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id', 'competition_id']);
     $this->showModal = true;
 };
 
@@ -260,6 +265,18 @@ $openCreateModal = function() {
                             </select>
                             @error('category_id') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                         </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2 italic">Pertandingan</label>
+                            <select wire:model.live="competition_id" class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
+                                <option value="">Pilih Pertandingan</option>
+                                @foreach($competitions as $competition)
+                                    <option value="{{ $competition->id }}">{{ $competition->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('competition_id') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>

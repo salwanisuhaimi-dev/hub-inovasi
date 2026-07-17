@@ -150,6 +150,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Volt::route('/admin/program/{program}/submissions', 'pages.admin.program-submissions')
         ->name('admin.program.submissions');
 
+    Volt::route('/admin/program/{program}/quiz-submissions', 'pages.admin.quiz-submissions')
+        ->name('admin.program.quiz-submissions');
+
     Volt::route('/quizzes', 'pages.admin.quiz-index')
         ->name('admin.quizzes');
 
@@ -166,6 +169,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
         Volt::route('/coffb/report', 'pages.admin.report')
             ->name('admin.coffb.report');
+
+        Volt::route('/archives/report', 'pages.admin.archives-report')
+            ->name('admin.archives.report');
 
         Volt::route('/publication', 'pages.admin.publication-index')
             ->name('admin.publication');

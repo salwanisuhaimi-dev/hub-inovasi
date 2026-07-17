@@ -26,29 +26,34 @@ state([
     ]
 ]);
 
-// Fetch actual portal pitches with vote markers
+// 1. Ambil Juara tertinggi sepanjang zaman secara bebas
+$topPitch = computed(function () {
+    return Pitch::withCount('votes')
+        ->withExists(['votes as has_voted' => function($query) {
+            $query->where('user_id', auth()->id());
+        }])
+        ->orderByDesc('votes_count')
+        ->first();
+});
+
 $pitches = computed(function () {
     return Pitch::withCount('votes')
         ->withExists(['votes as has_voted' => function($query) {
             $query->where('user_id', auth()->id());
         }])
-        ->latest()
-        ->get();
-});
-
-// Fetch monthly leaderboard records sorted by vote counts
-$topPitches = computed(function () {
-    return Pitch::withCount(['votes' => function ($query) {
-            $query->whereMonth('created_at', $this->selectedMonth)
-                  ->whereYear('created_at', $this->selectedYear);
-        }])
-        ->orderByDesc('votes_count')
-        ->take(3)
+        ->orderByDesc('votes_count') // Paling tinggi undi gerenti duduk atas sekali (Index 0)
+        ->latest() // Pemutus seri jika undi sama
         ->get();
 });
 
 $viewDetails = function($id) {
-    $this->viewingPitch = Pitch::find($id);
+    $this->viewingPitch = Pitch::withCount('votes')
+        ->with(['votes.user' => function($query) {
+            // Mengambil maklumat pengundi dan jabatan mereka (jika perlu dipapar)
+            $query->with('department');
+        }])
+        ->find($id);
+
     $this->showViewModal = true;
 };
 
@@ -327,88 +332,6 @@ $delete = function ($id) {
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div class="lg:col-span-4 space-y-12">
-               <section class="bg-white rounded-[40px] p-8 border border-stone-200/80 shadow-[0_20px_40px_rgba(0,0,0,0.03)] relative overflow-hidden">
-                      <div class="flex items-center justify-between mb-8 pb-4 border-b border-stone-100">
-                           <h3 class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-stone-800">
-                                <span class="text-base text-amber-500">👑</span> Carta Idea Terbaik
-                           </h3>
-
-                           <select wire:model.live="selectedMonth"
-                                class="text-[11px] font-black bg-stone-50 text-stone-700 border border-stone-200 rounded-xl py-1.5 px-3.5 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer shadow-xs">
-                                @foreach($months as $num => $name)
-                                    <option value="{{ $num }}" class="bg-white text-stone-800">{{ $name }}</option>
-                                @endforeach
-                           </select>
-                      </div>
-
-                      <div class="space-y-3.5">
-                      @forelse($this->topPitches as $index => $topPitch)
-
-                          @if($index === 0)
-                              <div wire:click="viewDetails({{ $topPitch->id }})"
-                                   class="group/item flex items-center justify-between p-5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl border border-orange-400/30 shadow-[0_20px_45px_rgba(245,158,11,0.32)] transform -translate-y-1 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_25px_50px_rgba(245,158,11,0.4)] relative overflow-hidden cursor-pointer">
-
-                                  <div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-
-                                  <div class="flex items-center gap-4 truncate mr-4">
-                                      <div class="w-10 h-10 rounded-2xl bg-white text-orange-600 font-black text-sm flex items-center justify-center shadow-md shrink-0">
-                                          🏆
-                                      </div>
-
-                                      <div class="truncate">
-                                          <!--<span class="text-[9px] font-black uppercase tracking-widest text-amber-100 bg-black/20 px-2 py-0.5 rounded-md block w-max mb-1">Juara</span>-->
-                                          <h4 class="text-xs md:text-sm font-black text-white uppercase tracking-wide line-clamp-2 whitespace-normal leading-tight max-w-[200px] md:max-w-[280px]">
-                                              {{ $topPitch->title }}
-                                          </h4>
-                                          <p class="text-[10px] text-amber-50 font-bold truncate mt-1">
-                                              Oleh: {{ $topPitch->user->name ?? 'N/A' }}
-                                          </p>
-                                      </div>
-                                   </div>
-
-                                  <!--<span class="text-xs font-mono font-black bg-white text-orange-600 px-3.5 py-2 rounded-2xl shadow-sm border border-orange-100 shrink-0">
-                                      {{ $topPitch->votes_count }} <span class="text-[9px] font-sans text-orange-500 font-normal">U</span>
-                                  </span>-->
-                              </div>
-
-                          @else
-                              <div wire:click="viewDetails({{ $topPitch->id }})"
-                                   class="group/item flex items-center justify-between p-3.5 bg-stone-50 hover:bg-white rounded-2xl transition-all duration-300 border border-stone-200/50 hover:border-orange-500/30 transform hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-
-                                  <div class="flex items-center gap-3 truncate mr-4">
-                                      <div class="w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0
-                                          {{ $index === 1 ? 'bg-slate-200 text-slate-700 border border-slate-300/60' : '' }}
-                                          {{ $index === 2 ? 'bg-orange-100 text-orange-600 border border-orange-200/60' : '' }}
-                                          {{ $index > 2 ? 'bg-stone-200/50 text-stone-500' : '' }}">
-                                          #{{ $index + 1 }}
-                                      </div>
-
-                                      <div class="truncate">
-                                          <h4 class="text-xs font-black text-stone-800 uppercase tracking-wide group-hover/item:text-orange-600 transition-colors line-clamp-2 whitespace-normal leading-tight max-w-[180px] md:max-w-[240px]">
-                                              {{ $topPitch->title }}
-                                          </h4>
-                                          <p class="text-[9px] text-stone-500 truncate mt-1 font-semibold">
-                                              Oleh: {{ $topPitch->user->name ?? 'N/A' }}
-                                          </p>
-                                      </div>
-                                  </div>
-
-                                  <!--<span class="text-[10px] font-mono font-black bg-white text-stone-700 group-hover/item:bg-orange-50 group-hover/item:text-orange-600 px-2.5 py-1.5 rounded-xl border border-stone-200/60 shrink-0 transition-colors shadow-2xs">
-                                      {{ $topPitch->votes_count }} <span class="text-[9px] font-sans text-stone-400 font-normal group-hover/item:text-orange-400">U</span>
-                                  </span>-->
-
-                              </div>
-                          @endif
-
-                      @empty
-                          <p class="text-[11px] text-stone-400 font-medium text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-                              Tiada rekod undian bulan ini.
-                          </p>
-                      @endforelse
-                      </div>
-               </section>
-
-
                <section class="bg-white rounded-[40px] p-10 shadow-xl shadow-stone-200 border border-stone-100 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-2 h-full bg-[#1e1b4b]"></div>
                     <h2 class="text-2xl font-black italic mb-2 tracking-tighter">Cadangan Umum</h2>
@@ -574,83 +497,90 @@ $delete = function ($id) {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
                     @forelse($this->pitches as $pitch)
-                     <div class="bg-slate-950/70 backdrop-blur-md p-8 rounded-[40px] transition-all duration-500 border border-cyan-500/10 hover:border-orange-500/40 relative group flex flex-col justify-between min-h-[380px] shadow-2xl hover:shadow-orange-950/30">
-                          <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all duration-500 pointer-events-none"></div>
+                    <div class="bg-gradient-to-b from-pink-50/70 via-white to-white p-8 rounded-[40px] transition-all duration-500 border border-pink-200/60 hover:border-orange-400/50 relative group flex flex-col justify-between min-h-[350px] shadow-[0_15px_40px_rgba(244,63,94,0.015)] hover:shadow-[0_20px_45px_rgba(245,158,11,0.08)] transform hover:-translate-y-2">
+                         <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-400/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+                         <div>
+                              <div class="flex items-center gap-4 mb-8">
+                                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 via-pink-400 to-rose-500 flex items-center justify-center text-white font-black shadow-md tracking-tighter text-sm transform group-hover:rotate-3 transition-transform duration-300">
+                                      @php
+                                          $name = $pitch->user->name ?? 'N/A';
+                                          $words = explode(' ', trim($name));
+                                          $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+                                      @endphp
+                                      {{ $initials }}
+                                  </div>
 
-                          <div>
-                               <div class="flex items-center gap-4 mb-8">
-                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-stone-950 font-black shadow-lg tracking-tighter text-sm transform group-hover:rotate-3 transition-transform duration-300">
-                                    @php
-                                        $name = $pitch->user->name ?? 'N/A';
-                                        $words = explode(' ', trim($name));
-                                        $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-                                    @endphp
-                                    {{ $initials }}
-                                    </div>
-
-                                    <div class="space-y-0.5">
-                                        <h4 class="text-sm font-black text-stone-100 tracking-tight">
-                                            {{ $pitch->user->name ?? 'Unknown' }}
+                                  <div class="space-y-0.5">
+                                        <h4 class="text-sm font-black text-stone-800 tracking-tight">
+                                              {{ $pitch->user->name ?? 'Unknown' }}
                                         </h4>
-                                        <span class="text-[10px] text-slate-200/80 font-sans uppercase tracking-wider block font-semibold">
-                                            {{ $pitch->user->department->name ?? 'N/A' }}
+                                        <span class="text-[10px] text-rose-600/80 font-sans uppercase tracking-wider block font-bold">
+                                              {{ $pitch->user->department->name ?? 'N/A' }}
                                         </span>
-                                    </div>
+                                  </div>
                               </div>
 
                               <div class="space-y-3">
-                                  <h3 class="text-2xl font-serif text-white leading-snug group-hover:text-orange-400 transition-colors duration-300">
+                                  <h3 class="text-2xl font-serif text-stone-800 leading-snug group-hover:text-rose-600 transition-colors duration-300 font-black">
                                       {{ $pitch->title }}
                                   </h3>
 
-                                  <p class="text-sm text-stone-300/80 leading-relaxed font-medium line-clamp-3">
+                                  <p class="text-sm text-stone-600 leading-relaxed font-medium line-clamp-3">
                                       {{ $pitch->description }}
                                   </p>
                               </div>
-                          </div>
-
-                          <div class="mt-8 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
-                               <button type="button"
-                                    wire:click="viewDetails({{ $pitch->id }})"
-                                    class="text-[10px] font-black uppercase tracking-widest text-stone-300 hover:text-orange-400 transition-colors focus:outline-none flex items-center gap-1.5 cursor-pointer group/btn">
-                                Lihat Butiran <span class="inline-block transform group-hover/btn:translate-x-1 transition-transform text-orange-400">&rarr;</span>
-                                </button>
-
-                                <div class="flex items-center gap-2 bg-stone-800/60 px-4 py-2 rounded-2xl border border-white/10">
-                                    @if(!auth()->check())
-                                    <button type="button"
-                                            onclick="window.location.href = '{{ route('login') }}?intended=' + encodeURIComponent(window.location.href);"
-                                            class="w-7 h-7 inline-flex items-center justify-center rounded-xl transition-all focus:outline-none text-stone-400 hover:text-rose-400"
-                                            title="Log masuk untuk undi">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                        </svg>
-                                    </button>
-                                    @elseif(auth()->id() !== $pitch->user_id && !(auth()->user()->is_admin ?? false) && !(auth()->user()->role === 'admin'))
-                                    <button type="button"
-                                            wire:click="vote({{ $pitch->id }})"
-                                            class="w-7 h-7 inline-flex items-center justify-center rounded-xl transition-all focus:outline-none
-                                            {{ $pitch->has_voted ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)] scale-110' : 'text-stone-400 hover:text-rose-400' }}"
-                                            title="{{ $pitch->has_voted ? 'Batal Undi' : 'Suka Idea Ini' }}">
-                                        <svg class="w-4 h-4 {{ $pitch->has_voted ? 'fill-current' : '' }}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                        </svg>
-                                    </button>
-                                    @else
-                                    <div class="w-7 h-7 inline-flex items-center justify-center text-stone-500 cursor-not-allowed"
-                                         title="{{ auth()->id() === $pitch->user_id ? 'Idea Anda Sendiri' : 'Admin Tidak Boleh Mengundi' }}">
-                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                            <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 5a3 3 0 0 1 6 0v3H9V7zm3 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                                        </svg>
-                                    </div>
-                                    @endif
-
-                                    <span class="text-xs font-mono font-black text-stone-100">
-                                        {{ $pitch->votes_count }}
-                                    </span>
-                                </div>
-                            </div>
                         </div>
+
+    <!-- TUKAR: border-white/10 -> border-stone-100 -->
+    <div class="mt-8 pt-4 border-t border-stone-100 flex items-center justify-between gap-4">
+         <!-- TUKAR: text-stone-300 -> text-stone-400 & hover:text-orange-500 -->
+         <button type="button"
+              wire:click="viewDetails({{ $pitch->id }})"
+              class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-orange-500 transition-colors focus:outline-none flex items-center gap-1.5 cursor-pointer group/btn">
+              Lihat Butiran <span class="inline-block transform group-hover/btn:translate-x-1 transition-transform text-orange-400">&rarr;</span>
+         </button>
+
+         <!-- TUKAR: bg-stone-800/60 & border-white/10 -> bg-white & border-pink-200 -->
+         <div class="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-2xl border border-pink-200 shadow-2xs transition-all duration-300 group-hover:border-orange-300">
+              @if(!auth()->check())
+              <button type="button"
+                      onclick="window.location.href = '{{ route('login') }}?intended=' + encodeURIComponent(window.location.href);"
+                      class="w-7 h-7 inline-flex items-center justify-center rounded-xl transition-all focus:outline-none text-stone-400 hover:text-rose-500"
+                      title="Log masuk untuk undi">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                  </svg>
+              </button>
+              @elseif(auth()->id() !== $pitch->user_id && !(auth()->user()->is_admin ?? false) && !(auth()->user()->role === 'admin'))
+              <button type="button"
+                      wire:click="vote({{ $pitch->id }})"
+                      class="w-7 h-7 inline-flex items-center justify-center rounded-xl transition-all focus:outline-none
+                      {{ $pitch->has_voted ? 'scale-110 drop-shadow-[0_4px_10px_rgba(244,63,94,0.35)]' : '' }}"
+                      title="{{ $pitch->has_voted ? 'Batal Undi' : 'Suka Idea Ini' }}">
+                  @if($pitch->has_voted)
+                      <!-- Ikon Solid Full Pink Menyala Bila Dah Diundi -->
+                      <svg class="w-4 h-4 text-rose-500 fill-current" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.28 2.25 8.5c0-3.78 2.462-6.5 5.5-6.5 1.76 0 3.35.828 4.25 2.108C12.9 2.828 14.49 2 16.25 2c3.038 0 5.5 2.422 5.5 5.5 0 3.788-2.438 6.86-4.768 10.012a25.18 25.18 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>
+                  @else
+                      <!-- Ikon Garisan Kosong Biasa Bila Belum Diundi -->
+                      <svg class="w-4 h-4 text-stone-400 hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+                  @endif
+              </button>
+              @else
+              <div class="w-7 h-7 inline-flex items-center justify-center text-stone-300"
+                   title="{{ auth()->id() === $pitch->user_id ? 'Idea Anda Sendiri' : 'Admin Tidak Boleh Mengundi' }}">
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 5a3 3 0 0 1 6 0v3H9V7zm3 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                  </svg>
+              </div>
+              @endif
+
+              <!-- TUKAR: text-stone-100 -> text-stone-800 -->
+              <span class="text-xs font-mono font-black text-stone-800 pr-0.5">
+                   {{ $pitch->votes_count }}<span class="text-[9px] font-sans text-stone-400 font-normal ml-0.5"></span>
+              </span>
+         </div>
+    </div>
+</div>
                         @empty
                         <div class="col-span-full py-16 flex flex-col items-center justify-center bg-white rounded-[40px] border-2 border-dashed border-stone-200 shadow-sm relative overflow-hidden">
                             <div class="relative z-10 flex flex-col items-center text-center px-6">
@@ -697,6 +627,65 @@ $delete = function ($id) {
                     </button>
                 </div>
 
+                <div class="mt-4 flex items-center gap-2 text-xs text-stone-600 font-medium bg-pink-50/50 p-3.5 rounded-2xl border border-pink-100/70">
+                        <span class="text-base animate-pulse">❤️</span>
+                        <div>
+                            @php
+                                // 1. Dapatkan senarai semua nama pengundi (hanya ambil nama depan untuk kekemasan)
+                                $rawVoters = $this->viewingPitch->votes->map(fn($v) => explode(' ', trim($v->user->name ?? 'User'))[0])->filter()->values();
+                                $totalVotes = $this->viewingPitch->votes_count ?? $rawVoters->count();
+
+                                // 2. Semak jika anda (current user) ada mengundi
+                                $hasMe = auth()->check() && $this->viewingPitch->votes->contains('user_id', auth()->id());
+
+                                // 3. Bina array nama untuk dipaparkan
+                                $displayNames = [];
+
+                                if ($hasMe) {
+                                    $displayNames[] = 'Anda';
+                                    // Buang user semasa daripada senarai raw untuk elak pertindihan
+                                    $rawVoters = $this->viewingPitch->votes->filter(fn($v) => $v->user_id !== auth()->id())->map(fn($v) => explode(' ', trim($v->user->name ?? 'User'))[0])->values();
+                                }
+
+                                // 4. Masukkan nama orang lain sehingga penuh kuota 3 nama
+                                foreach ($rawVoters as $name) {
+                                    if (count($displayNames) < 3) {
+                                        $displayNames[] = $name;
+                                    }
+                                }
+
+                                // 5. Kira baki untuk perkataan "yang lain"
+                                $displayedCount = count($displayNames);
+                                $othersCount = $totalVotes - $displayedCount;
+
+                                // Senarai penuh nama penuh untuk tujuan tooltip box
+                                $fullNamesList = $this->viewingPitch->votes->map(fn($v) => $v->user->name ?? 'Unknown')->implode(', ');
+                            @endphp
+
+                            @if($totalVotes == 0)
+                                <span>Belum ada sesiapa yang menyokong idea ini lagi. Jadilah yang pertama!</span>
+                            @else
+                                <span>
+                                    @if($othersCount > 0)
+                                        <!-- Jika ada baki orang lain: Gabung 3 nama pertama dengan koma -->
+                                        <strong class="text-stone-800 font-black">{{ implode(', ', $displayNames) }}</strong>
+                                        dan <span class="text-rose-600 font-black cursor-help border-b border-dashed border-rose-300" title="{{ $fullNamesList }}">{{ $othersCount }} yang lain</span>
+                                    @else
+                                        <!-- Jika tiada baki: Papar nama-nama tersebut dengan gaya tatabahasa betul (guna 'dan' di hujung) -->
+                                        @if(count($displayNames) == 1)
+                                            <strong class="text-stone-800 font-black">{{ $displayNames[0] }}</strong>
+                                        @elseif(count($displayNames) == 2)
+                                            <strong class="text-stone-800 font-black">{{ $displayNames[0] }}</strong> dan <strong class="text-stone-800 font-black">{{ $displayNames[1] }}</strong>
+                                        @else
+                                            <strong class="text-stone-800 font-black">{{ $displayNames[0] }}, {{ $displayNames[1] }},</strong> dan <strong class="text-stone-800 font-black">{{ $displayNames[2] }}</strong>
+                                        @endif
+                                    @endif
+
+                                    menyukai idea ini.
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 <div class="space-y-6">
                     <div class="space-y-2">
                         <h4 class="text-xs font-black text-stone-400 uppercase tracking-wider">Penerangan Ringkas:</h4>

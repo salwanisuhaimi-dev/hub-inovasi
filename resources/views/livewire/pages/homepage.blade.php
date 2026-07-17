@@ -108,7 +108,7 @@ $checkAnswer = function ($key) {
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="#explore" class="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl">
+                    <a href="{{ route('archive') }}" class="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl">
                         Lihat Arkib Projek
                     </a>
                     <a href="{{ route('pitch') }}" class="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl font-bold hover:bg-white/20 transition">
@@ -229,7 +229,7 @@ $checkAnswer = function ($key) {
                             <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{{ $program->location ?? '' }}</span>
                         </div>
 
-                        <h3 class="text-xl font-extrabold text-gray-900 mb-4 leading-tight group-hover:text-orange-600 transition line-clamp-1">
+                        <h3 class="text-xl font-extrabold text-gray-900 mb-4 leading-tight group-hover:text-orange-600 transition line-clamp-2">
                             {{ $program->title }}
                         </h3>
                         <p class="text-gray-500 text-sm line-clamp-2 leading-relaxed mb-8">{{ $program->description }}</p>
@@ -239,27 +239,36 @@ $checkAnswer = function ($key) {
                         @endphp
 
                         @if($isClosed)
-                              <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
-                                  Penyertaan Ditutup
-                              </button>
+                        <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
+                            Penyertaan Ditutup
+                        </button>
                         @else
                         @php
-                            $hasApplied = false;
-                            if (auth()->check()) {
-                                $hasApplied = auth()->user()->submissions()
-                                    ->where('program_id', $program->id)
-                                    ->exists();
-                            }
+                        $hasApplied = false;
+                        if (auth()->check()) {
+                          $hasApplied = auth()->user()->submissions()
+                          ->where('program_id', $program->id)
+                          ->exists();
+                        }
                         @endphp
-                              @if(!auth()->check())
-                              <button class="w-full py-4 bg-gray-50 text-gray-900 rounded-2xl font-bold text-sm group-hover:bg-orange-500 group-hover:text-white transition duration-300">
-                                  Sertai Kami
-                              </button>
-                              @elseif($hasApplied)
-                              <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
-                                  Telah sertai
-                              </button>
-                              @endif
+
+                        @if(!auth()->check())
+                        <a href="{{ route('login') }}?intended={{ urlencode(url()->current()) }}"
+                              class="w-full py-4 bg-gray-50 text-gray-900 rounded-2xl font-bold text-sm group-hover:bg-purple-600 group-hover:text-white transition duration-300 block text-center">
+                              Sertai Kami
+                        </a>
+
+                        @elseif($hasApplied)
+                        <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
+                              Telah sertai
+                        </button>
+
+                        @else
+                        <a href="{{ route('project.submit', $program->id) }}"
+                              class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold text-sm transition duration-300 block text-center shadow-lg shadow-purple-100">
+                              Sertai Sekarang
+                        </a>
+                        @endif {{-- Menutup lapisan dalam (!auth()->check()) --}}
 
                         @endif
                    </div>
@@ -310,18 +319,16 @@ $checkAnswer = function ($key) {
                            class="w-full h-[450px] object-cover"
                            alt="Gambar">
                   </div>
-                  <div class="absolute -left-2 md:-left-4 bottom-16 bg-white p-6 rounded-2xl shadow-xl z-20">
+                  <!--<div class="absolute -left-2 md:-left-4 bottom-16 bg-white p-6 rounded-2xl shadow-xl z-20">
                       <div class="flex items-center space-x-4">
                           <div class="flex -space-x-2">
                               <div class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white"></div>
                               <div class="w-8 h-8 rounded-full bg-indigo-500 border-2 border-white"></div>
                               <div class="w-8 h-8 rounded-full bg-cyan-500 border-2 border-white"></div>
                           </div>
-                          <p class="text-[10px] font-bold text-gray-900 uppercase tracking-tighter italic leading-none">
-                              100+ Warga <br><span class="text-blue-600">Terlibat</span>
-                          </p>
+
                       </div>
-                  </div>
+                  </div>-->
               </div>
               <div class="w-full lg:w-1/2">
                     <span class="text-blue-600 font-bold text-xs uppercase tracking-[0.3em] mb-4 block">Mengenai Kami</span>

@@ -1,17 +1,37 @@
 <?php
 
 use App\Models\Competition;
+use App\Models\Program;
+use Carbon\Carbon;
 use function Livewire\Volt\{layout, state, mount};
 
 layout('layouts.landing');
 
 state([
     'competition' => null,
-    'openIndex' => null
+    'isExpired' => false,
+    'program' => null,
+    'openIndex' => null,
+    'hasSubmitted' => false
 ]);
 
 mount(function (Competition $competition) {
     $this->competition = $competition;
+
+    // 1. Dapatkan program berserta semakan jika user ID semasa wujud dalam table submissions bagi program_id ini
+    $this->program = Program::withExists(['submissions as has_submitted' => function($query) {
+        $query->where('user_id', auth()->id());
+    }])->where('competition_id', $competition->id)->first();
+
+    if ($this->program) {
+        // Set nilai status penyertaan berdasarkan program_id
+        $this->hasSubmitted = $this->program->has_submitted ?? false;
+
+        // 2. Semak deadline program
+        if ($this->program->deadline) {
+            $this->isExpired = Carbon::now()->greaterThan(Carbon::parse($this->program->deadline));
+        }
+    }
 });
 
 $toggle = function ($index) {
@@ -24,61 +44,114 @@ $toggle = function ($index) {
     <x-top-nav />
 
     <div class="bg-gray-50 min-h-screen pb-20">
-        <header class="py-20 bg-white border-b border-gray-100 px-6">
-            <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10">
-                <div class="lg:w-2/3 text-center lg:text-left">
-                    <span class="text-blue-600 font-bold text-xs uppercase tracking-[0.3em]">Pertandingan</span>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mt-2 leading-tight">
-                        {{ $competition->name }}
-                    </h2>
-                    <p class="text-gray-500 mt-4 max-w-xl mx-auto lg:mx-0 leading-relaxed text-lg">
-                        {{ $competition->description }}
-                    </p>
-                </div>
+      <style>
+          @keyframes floatIklan {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-10px); }
+          }
+          .animate-float-premium {
+              animation: floatIklan 4s ease-in-out infinite;
+          }
+      </style>
 
-                <div class="lg:w-1/3 flex flex-col items-center lg:items-end justify-center">
-                    <div class="relative group">
-                        @if($competition->image_path)
-                        <div class="absolute inset-0 bg-blue-600/10 blur-3xl rounded-[3rem] opacity-30 group-hover:opacity-75 transition-opacity duration-500"></div>
-                        <div class="relative bg-white p-5 rounded-[3rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 w-full max-w-[340px] overflow-hidden flex flex-col gap-5">
-                             <div class="relative overflow-hidden rounded-[2.2rem] bg-stone-50 border border-stone-100 w-full h-[340px] flex items-center justify-center">
-                                  <img src="{{ asset('storage/' . $competition->image_path) }}"
-                                       alt="{{ $competition->name }}"
-                                       class="w-full h-full object-contain transform scale-100 group-hover:scale-103 transition-transform duration-500 ease-out block">
+      <style>
+          @keyframes floatIklan {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-10px); }
+          }
+          .animate-float-premium {
+              animation: floatIklan 4s ease-in-out infinite;
+          }
+      </style>
 
-                                   <!--<div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md py-1.5 px-3.5 rounded-full shadow-sm flex items-center gap-1.5 border border-white/20">
-                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                        <span class="text-[10px] font-bold text-gray-900 tracking-wider uppercase">Terbuka</span>
-                                   </div>-->
+      <header class="relative py-20 md:py-28 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-stone-100/50 px-6">
+          <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+
+              <!-- Lajur Kiri: Teks Penerangan -->
+              <div class="lg:w-7/12 text-center lg:text-left">
+                  <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/80 shadow-sm mb-6">
+                      <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                      <span class="text-blue-700 font-bold text-[10px] uppercase tracking-[0.2em]">{{ __('Pertandingan') }}</span>
+                  </div>
+
+                  <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.15] tracking-tight">
+                      {{ $competition->name }}
+                  </h2>
+
+                  <p class="text-gray-600 mt-6 max-w-xl mx-auto lg:mx-0 leading-relaxed text-lg font-medium opacity-90">
+                      {{ $competition->description }}
+                  </p>
+              </div>
+
+              <!-- Lajur Kanan: Ruang Iklan Gambar & Butang -->
+              <div class="lg:w-5/12 flex flex-col items-center lg:items-end justify-center w-full">
+                  <!-- Pembungkus Utama Gambar + Butang (Kekal max-w-[460px] & gap-8) -->
+                  <div class="w-full max-w-[460px] flex flex-col gap-8">
+
+                      <!-- Bekas Gambar: h-[420px] & object-contain -->
+                      <div class="relative group w-full h-[420px] flex items-center justify-center animate-float-premium">
+                          <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/20 via-purple-500/20 to-pink-500/25 blur-3xl opacity-75 group-hover:opacity-100 group-hover:scale-130 transition-all duration-700 ease-out pointer-events-none"></div>
+
+                          @if($competition->image_path)
+                              <img src="{{ asset('storage/' . $competition->image_path) }}"
+                                   alt="{{ $competition->name }}"
+                                   class="relative z-10 w-full h-full object-contain transform scale-100 group-hover:scale-115 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.08)] group-hover:drop-shadow-[0_35px_45px_rgba(59,130,246,0.2)] transition-all duration-500 ease-out block">
+                          @else
+                              <div class="relative z-10 flex flex-col items-center justify-center text-gray-400 gap-2">
+                                  <svg class="w-16 h-16 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 00-1.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"></path></svg>
+                                  <span class="text-sm font-semibold tracking-wider uppercase text-gray-400">Tiada Gambar</span>
                               </div>
+                          @endif
+                      </div> <!-- Tag penutup bekas gambar yang betul -->
 
-                              @auth
-                                  @if(auth()->user()->role === 'admin' || auth()->user()->is_admin)
-                                      <a href="#"
-                                         onclick="alert('Akses tidak dibenarkan.'); return false;"
-                                         class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-[1.8rem] text-center shadow-md shadow-blue-900/10 hover:shadow-lg transition-all duration-300 transform active:scale-95 block">
-                                          Sertai Sekarang
-                                      </a>
-                                  @else
-                                      <a href="{{ route('user.dashboard') }}"
-                                         class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-[1.8rem] text-center shadow-md shadow-blue-900/10 hover:shadow-lg transition-all duration-300 transform active:scale-95 block">
-                                          Sertai Sekarang
-                                      </a>
-                                  @endif
+                      <div class="w-full flex justify-center">
+                          <div class="w-full max-w-xs">
+                              @if($hasSubmitted)
+
+                              @elseif($isExpired)
+                                  <button disabled
+                                          class="w-full bg-slate-100 text-slate-400 font-bold text-xs uppercase tracking-widest py-4 px-8 rounded-[1.8rem] text-center cursor-not-allowed block">
+                                      Pendaftaran Ditutup
+                                  </button>
+                              @elseif(!$program)
+                                  <button disabled
+                                          class="w-full bg-amber-50 text-amber-600 font-bold text-xs uppercase tracking-widest py-4 px-8 rounded-[1.8rem] text-center cursor-not-allowed block">
+                                      Program Tidak Ditemui
+                                  </button>
                               @else
-                                  <a href="{{ route('login') }}?intended={{ urlencode(route('user.dashboard')) }}"
-                                     class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs uppercase tracking-widest py-4 px-6 rounded-[1.8rem] text-center shadow-md shadow-blue-900/10 hover:shadow-lg transition-all duration-300 transform active:scale-95 block">
-                                      Sertai Sekarang
-                                  </a>
-                              @endauth
-                        </div>
-                        @endif
-                    </div>
-               </div>
-            </div>
-        </header>
+                                  @auth
+                                      @if(auth()->user()->role === 'admin' || auth()->user()->is_admin)
+                                          <a href="#"
+                                             onclick="alert('Akses tidak dibenarkan untuk Admin.'); return false;"
+                                             class="w-full bg-slate-900 text-white font-bold text-xs uppercase tracking-widest py-4 px-8 rounded-[1.8rem] text-center shadow-md block transition-all duration-300 transform active:scale-95">
+                                              Sertai Sekarang
+                                          </a>
+                                      @else
+                                          <a href="{{ route('project.submit', $program->id) }}"
+                                             class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-xs uppercase tracking-widest py-4 px-8 rounded-[1.8rem] text-center shadow-[0_10px_25px_rgba(79,70,229,0.2)] hover:shadow-[0_15px_30px_rgba(79,70,229,0.3)] block transition-all duration-300 transform active:scale-95 subpixel-antialiased">
+                                              Sertai Sekarang &rarr;
+                                          </a>
+                                      @endif
+                                  @else
+                                      <a href="{{ route('login') }}?intended={{ urlencode(route('project.submit', $program->id)) }}"
+                                         class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-bold text-xs uppercase tracking-widest py-4 px-8 rounded-[1.8rem] text-center shadow-[0_10px_25px_rgba(79,70,229,0.2)] hover:shadow-[0_15px_30px_rgba(79,70,229,0.3)] block transition-all duration-300 transform active:scale-95 subpixel-antialiased">
+                                          Daftar & Sertai &rarr;
+                                      </a>
+                                  @endauth
+                              @endif
+                          </div>
+                      </div>
+                  </div> <!-- Penutup bagi w-full max-w-[460px] -->
+              </div> <!-- Penutup bagi lg:w-5/12 -->
 
-        <div class="max-w-7xl mx-auto px-6 my-8">
+          </div>
+      </header>
+
+
+      <div class="max-w-7xl mx-auto px-6 my-8">
             <div class="grid lg:grid-cols-3 gap-8 mb-16">
                 <div class="lg:col-span-2 bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100">
                     <h2 class="text-2xl font-black text-[#002966] mb-6 flex items-center gap-3">

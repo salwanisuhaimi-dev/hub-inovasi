@@ -20,6 +20,13 @@ $programs = computed(function () {
         ->get();
 });
 
+$activePrograms = computed(function () {
+    return \App\Models\Program::whereIn('category_id', [1, 4, 5])
+        ->latest()
+        ->get();
+});
+
+
 $reviews = computed(function () {
     return Review::query()
         ->with(['user'])
@@ -81,59 +88,67 @@ $delete = function ($id) {
         <x-top-nav />
 
         <div class="max-w-7xl mx-auto px-6 py-10">
-            <header class="relative overflow-hidden rounded-[50px] p-10 md:p-16 mb-12 shadow-2xl border-4 border-white/20 bg-gradient-to-br from-[#064e3b] via-[#059669] to-[#064e3b]">
-                <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-400/10 rounded-full -mr-32 -mt-32 blur-[100px]"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-900/40 rounded-full -ml-20 -mb-20 blur-[80px]"></div>
+          <header class="relative overflow-hidden rounded-[40px] p-8 md:p-16 mb-12 shadow-[0_30px_80px_rgba(4,120,87,0.12)] border border-emerald-600/20 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22]">
+              <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-400/15 rounded-full -mr-40 -mt-40 blur-[120px] pointer-events-none"></div>
+              <div class="absolute bottom-0 left-0 w-80 h-80 bg-teal-400/10 rounded-full -ml-24 -mb-24 blur-[100px] pointer-events-none"></div>
 
-                <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                    <div class="lg:w-1/2 space-y-6 text-center lg:text-left">
-                        <div class="inline-flex items-center px-4 py-1.5 bg-emerald-800/30 border border-emerald-400/30 rounded-full shadow-inner">
-                            <span class="text-emerald-200 text-[10px] font-black uppercase tracking-[0.3em]">Hab Transformasi Kreatif</span>
-                        </div>
+              <div class="absolute inset-0 bg-[linear-gradient(to_right,#0596690a_1px,transparent_1px),linear-gradient(to_bottom,#0596690a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
 
-                        <h1 class="text-5xl md:text-7xl font-black leading-[1.1] text-white tracking-tighter">
-                            Penyertaan <br>
-                            <span class="text-emerald-300 italic">Pertandingan.</span>
-                        </h1>
+              <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
 
-                        <p class="text-emerald-50/70 text-lg font-medium max-w-xl leading-relaxed">
-                            Menerajui perubahan melalui penyampaian idea kreatif dan solusi organisasi yang efektif untuk masa depan jabatan.
-                        </p>
-                    </div>
+                  <div class="lg:w-1/2 space-y-6 text-center lg:text-left">
+                      <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-950/80 border border-emerald-500/30 rounded-full shadow-inner">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          <span class="text-emerald-300 text-[10px] font-bold uppercase tracking-[0.25em]">{{ __('Hab Transformasi Kreatif') }}</span>
+                      </div>
 
-                    <div class="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="p-6 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-md shadow-xl transition-transform hover:-translate-y-1">
-                            <div class="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold mb-4 shadow-lg rotate-3">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-emerald-300 font-black text-sm mb-1 uppercase tracking-wider">Langkah Mudah</h3>
-                            <p class="text-white/80 text-sm leading-relaxed">Isi borang atas talian dan lampirkan kertas kerja anda.</p>
-                        </div>
+                      <h1 class="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] text-white tracking-tight">
+                          Penyertaan <br>
+                          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300 italic font-serif">Pertandingan.</span>
+                      </h1>
 
-                        <div class="p-6 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-md shadow-xl transition-transform hover:-translate-y-1">
-                            <div class="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center text-white font-bold mb-4 shadow-lg -rotate-3">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-amber-400 font-black text-sm mb-1 uppercase tracking-wider">Kriteria Penilaian</h3>
-                            <p class="text-white/80 text-sm leading-relaxed">Fokus kepada impak, keaslian, dan kebolehlaksanaan idea.</p>
-                        </div>
+                      <p class="text-emerald-100/70 text-lg font-medium max-w-xl leading-relaxed">
+                          Menerajui perubahan melalui penyampaian idea kreatif dan solusi organisasi yang efektif untuk masa depan jabatan.
+                      </p>
+                  </div>
 
-                        <div class="p-6 rounded-[2rem] border border-white/10 bg-gradient-to-r from-emerald-600/20 to-transparent backdrop-blur-md sm:col-span-2 flex items-center gap-6 shadow-xl">
-                            <div class="w-14 h-14 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-emerald-300 text-2xl border border-white/10">
-                            🌱
-                            </div>
-                            <div>
-                                <h3 class="text-emerald-200 font-black text-sm mb-0.5 uppercase tracking-[0.2em]">Sumbangkan Aspirasi</h3>
-                                <p class="text-white/70 text-[14px]">Setiap idea kecil anda adalah pemacu kepada transformasi besar jabatan.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+                  <div class="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-5 w-full">
+
+                      <div class="group p-6 rounded-[2.5rem] border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-xl hover:border-emerald-400/30 hover:bg-white/[0.08] hover:-translate-y-1.5 transition-all duration-500">
+                          <div class="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-300 mb-5 shadow-inner transform group-hover:rotate-6 transition-transform duration-300">
+                              <svg class="w-5 h-5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                              </svg>
+                          </div>
+                          <h3 class="text-emerald-300 font-black text-sm mb-1 uppercase tracking-wider">Langkah Mudah</h3>
+                          <p class="text-emerald-100/70 text-sm leading-relaxed">Isi borang atas talian dan lampirkan kertas kerja anda dengan mudah.</p>
+                      </div>
+
+                      <div class="group p-6 rounded-[2.5rem] border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-xl hover:border-amber-400/30 hover:bg-white/[0.08] hover:-translate-y-1.5 transition-all duration-500">
+                          <div class="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-300 mb-5 shadow-inner transform group-hover:-rotate-6 transition-transform duration-300">
+                              <svg class="w-5 h-5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                              </svg>
+                          </div>
+                          <h3 class="text-amber-300 font-black text-sm mb-1 uppercase tracking-wider">Kriteria Penilaian</h3>
+                          <p class="text-emerald-100/70 text-sm leading-relaxed">Fokus utama diberikan kepada impak, keaslian, dan kebolehlaksanaan idea.</p>
+                      </div>
+
+                      <div class="p-6 rounded-[2.5rem] border border-emerald-500/20 bg-gradient-to-r from-emerald-950/60 via-emerald-900/20 to-transparent backdrop-blur-xl sm:col-span-2 flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-xl">
+                          <div class="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex-shrink-0 flex items-center justify-center text-2xl shadow-inner">
+                              🌱
+                          </div>
+                          <div class="text-center sm:text-left">
+                              <h3 class="text-emerald-200 font-black text-sm mb-1.5 uppercase tracking-[0.2em]">Sumbangkan Aspirasi</h3>
+                              <p class="text-emerald-100/60 text-sm leading-relaxed">Setiap idea kecil anda adalah pemacu utama kepada transformasi besar dalam jabatan kita.</p>
+                          </div>
+                      </div>
+
+                  </div>
+              </div>
+          </header>
+
+
             <div class="grid lg:grid-cols-12 gap-12">
                 <div class="lg:col-span-4 space-y-12">
                     <section class="bg-[#efebe9] rounded-[32px] p-8 border border-emerald-200">
@@ -141,7 +156,7 @@ $delete = function ($id) {
                             <span class="bg-[#1b9a4c] text-white p-1 rounded-md text-xs italic">Akan Datang</span> Pertandingan
                         </h3>
                         <div class="space-y-4">
-                            @forelse($this->programs as $program)
+                            @forelse($this->activePrograms as $program)
                             <div class="group flex items-center gap-4 p-3 hover:bg-white rounded-2xl transition-all cursor-default">
                                 <div class="bg-white group-hover:bg-green-600 group-hover:text-white w-12 h-12 rounded-xl flex flex-col items-center justify-center shadow-sm transition-colors">
                                     <span class="text-[10px] font-bold">

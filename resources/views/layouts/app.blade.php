@@ -111,7 +111,7 @@
                             class="pl-4 bg-gray-50">
 
                             @foreach(\App\Models\Program::all() as $program)
-                                <x-nav-link :href="route('admin.program.submissions', $program->id)"
+                                <x-nav-link :href="$program->category_id == 3 ? route('admin.program.quiz-submissions', $program->id) : route('admin.program.submissions', $program->id)"
                                     :active="request()->fullUrlIs(route('admin.program.submissions', $program->id))"
                                     class="block w-full py-2 text-xs">
                                     {{ $program->title }}

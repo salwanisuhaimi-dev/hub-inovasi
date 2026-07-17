@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\QuizSubmission;
 
 class Program extends Model
 {
@@ -28,7 +29,8 @@ class Program extends Model
         'image_path',
         'publication_id',
         'form_publication_id',
-        'time_limit'
+        'time_limit',
+        'competition_id',
     ];
 
     public function category()
@@ -50,4 +52,25 @@ class Program extends Model
     {
         return $this->hasMany(Quiz::class);
     }
+
+    public function hasSubmitted()
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        return QuizSubmission::where('user_id', auth()->id())
+            ->where('program_id', $this->id)
+            ->exists();
+    }
+
+    public function competition()
+    {
+        // Program mempunyai satu detail competition (TOR)
+        return $this->hasOne(Competition::class, 'program_id');
+    }
+
+    public function quizSubmissions() {
+        return $this->hasMany(QuizSubmission::class);
+    }    
 }

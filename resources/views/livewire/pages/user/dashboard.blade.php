@@ -134,6 +134,26 @@ with([
                     <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Aktif</span>
                 </div>
             </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center transform hover:scale-[1.02] transition-transform duration-300">
+                <!-- Ikon Dompet Comel dengan Kesan Glow -->
+                <div class="p-3.5 bg-emerald-50 rounded-xl text-emerald-500 shadow-inner group-hover:animate-bounce">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 1.66-4.03 3-9 3s-9-1.34-9-3M3 12V6c0-1.66 4.03-3 9-3s9 1.34 9 3v6M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3m0 0v6c0 1.66-4.03 3-9 3s-9-1.34-9-3v-6" />
+                    </svg>
+                </div>
+
+                <!-- Informasi Kredit -->
+                <div class="ml-4 flex flex-col gap-1">
+                    <p class="text-xs text-gray-400 uppercase font-black tracking-wider">Kredit Saya</p>
+                    <div class="flex items-center gap-2">
+                        <!-- Badge Nilai Kredit yang Bulat & Comel -->
+                        <span class="px-3 py-1 text-sm font-extrabold bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200 shadow-sm">
+                            💰 {{ auth()->user()->credits }} Token
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="mt-10">
