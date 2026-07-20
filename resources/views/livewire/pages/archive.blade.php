@@ -79,12 +79,10 @@ $viewDetails = function ($id) {
     <x-top-nav />
     <div class="max-w-7xl mx-auto px-6 pt-10">
       <header class="relative overflow-hidden rounded-[40px] p-8 md:p-16 mb-12 border border-white/10 bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#042f2e] shadow-[0_30px_100px_-15px_rgba(30,27,75,0.7)]">
-          <!-- Aurora Light Glare Effects -->
           <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full -mr-48 -mt-48 blur-[120px] mix-blend-screen pointer-events-none"></div>
           <div class="absolute bottom-0 left-1/3 w-[350px] h-[350px] bg-emerald-500/10 rounded-full -mb-32 blur-[100px] mix-blend-screen pointer-events-none"></div>
           <div class="absolute bottom-0 left-0 w-80 h-80 bg-fuchsia-500/10 rounded-full -ml-32 -mb-32 blur-[90px] mix-blend-screen pointer-events-none"></div>
 
-          <!-- Decorative Wireframe Icon (Enhanced Sparkle/Star) -->
           <div class="absolute right-12 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none hidden lg:block select-none">
               <svg width="280" height="280" viewBox="0 0 24 24" fill="none" stroke="url(#sparkleGradient)" stroke-width="0.75">
                   <defs>
@@ -98,25 +96,20 @@ $viewDetails = function ($id) {
           </div>
 
           <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-              <!-- Left Side: Typography & Search -->
               <div class="lg:w-1/2 space-y-6 text-center lg:text-left">
-                  <!-- Badge with Shimmer Gradient -->
                   <div class="inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-teal-500/15 border border-indigo-400/20 rounded-full shadow-[inset_0_1px_12px_rgba(255,255,255,0.05)]">
                       <span class="bg-gradient-to-r from-indigo-200 via-purple-200 to-teal-200 bg-clip-text text-transparent text-[10px] font-black uppercase tracking-[0.35em]">Pentas Kecemerlangan JPA</span>
                   </div>
 
-                  <!-- Modern Heavy Heading -->
                   <h1 class="text-5xl md:text-6xl font-black leading-[1.05] text-white tracking-tight">
                       Arkib <br>
                       <span class="bg-gradient-to-r from-indigo-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent italic font-serif font-light">Inovasi</span>
                   </h1>
 
-                  <!-- Balanced Subtext -->
                   <p class="text-slate-300/85 text-base md:text-lg font-normal max-w-xl leading-relaxed">
                       Mengiktiraf idea kreatif dan projek digital yang memberikan impak tinggi kepada penyampaian perkhidmatan jabatan.
                   </p>
 
-                  <!-- Futuristic Search Bar -->
                   <div class="mt-8 max-w-md relative group">
                       <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
                       <div class="relative">
@@ -129,9 +122,7 @@ $viewDetails = function ($id) {
                   </div>
               </div>
 
-              <!-- Right Side: Bento Grid Cards -->
               <div class="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                  <!-- Card 1: Cyan/Indigo Fusion -->
                   <div class="p-6 rounded-[2rem] border border-white/5 bg-white/[0.03] backdrop-blur-xl shadow-2xl transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.06] hover:border-indigo-500/30 group">
                       <div class="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-cyan-500 rounded-2xl flex items-center justify-center text-white font-bold mb-4 shadow-lg shadow-indigo-500/20 transform group-hover:rotate-6 transition-transform">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -140,7 +131,6 @@ $viewDetails = function ($id) {
                       <p class="text-slate-300 text-sm leading-relaxed">Transformasi proses kerja melalui teknologi terkini.</p>
                   </div>
 
-                  <!-- Card 2: Emerald/Teal Fusion -->
                   <div class="p-6 rounded-[2rem] border border-white/5 bg-white/[0.03] backdrop-blur-xl shadow-2xl transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.06] hover:border-emerald-500/30 group">
                       <div class="w-10 h-10 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-white font-bold mb-4 shadow-lg shadow-emerald-500/20 transform group-hover:-rotate-6 transition-transform">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -149,7 +139,6 @@ $viewDetails = function ($id) {
                       <p class="text-slate-300 text-sm leading-relaxed">Projek yang telah melalui penilaian juri profesional.</p>
                   </div>
 
-                  <!-- Card 3: Wide Ribbon Card -->
                   <div class="p-6 rounded-[2rem] border border-white/5 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent backdrop-blur-xl sm:col-span-2 flex items-center gap-6 shadow-2xl transition-all duration-300 hover:border-purple-500/20">
                       <div class="w-14 h-14 bg-gradient-to-br from-white/10 to-white/0 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl border border-white/10 shadow-inner group-hover:scale-105 transition-transform">
                           🏆

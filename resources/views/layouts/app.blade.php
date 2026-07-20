@@ -23,7 +23,7 @@
 
                 <nav class="flex-1 px-4 space-y-1">
                 @php
-                    $dashboardRoute = auth()->user()->role === 'admin' ? 'admin.dashboard' : 'user.dashboard';
+                    $dashboardRoute = auth()->user()->role === 'admin' || auth()->user()->role === 'superadmin'  ? 'admin.dashboard' : 'user.dashboard';
                 @endphp
 
                     <x-nav-link :href="route($dashboardRoute)" :active="request()->routeIs($dashboardRoute)" class="block w-full border-l-4" style="padding-left: 15px">
@@ -35,7 +35,7 @@
                     </x-nav-link>
 
                     {{-- Menu Admin --}}
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'superadmin')
                         <div class="pt-4 pb-2 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                             Admin Menu
                         </div>

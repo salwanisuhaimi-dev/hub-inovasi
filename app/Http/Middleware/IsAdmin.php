@@ -18,10 +18,10 @@ class IsAdmin
             return redirect('login');
         }
 
-        if (Auth::user()->role === 'admin') {
+        if (in_array(Auth::user()->role, ['admin', 'superadmin'])) {
             return $next($request);
         }
-        
+
         if ($request->is('admin*') || $request->is('dashboard')) {
             return redirect('/')->with('status', 'Akses terhad untuk Admin sahaja.');
         }

@@ -14,19 +14,15 @@ with([
       $selectedYear = request('year', date('Y'));
       $selectedDeptId = request('dept_id');
 
-      // 1. Bina Query Asas
       $query = \App\Models\CoffeeBreakIdea::whereHas('session', function($q) use ($selectedDeptId, $selectedYear, $selectedMonth) {
 
-          // TAPIS JABATAN: Guna department_id terus dari table sessions
           if ($selectedDeptId) {
               $q->where('department_id', $selectedDeptId);
           }
 
-          // TAPIS TAHUN: Berdasarkan tarikh sesi
           $q->whereYear('date_created', $selectedYear);
 
           if ($selectedMonth) {
-              // 1. Jika pilih Quarter (q1, q2...)
               if (str_starts_with($selectedMonth, 'q')) {
                   $quarters = [
                       'q1' => [1, 2, 3],
@@ -37,7 +33,6 @@ with([
                   $months = $quarters[$selectedMonth] ?? [];
                   $q->whereIn(\DB::raw('MONTH(date_created)'), $months);
               }
-              // 2. Jika pilih Half Year (h1, h2...) - TAMBAHAN BARU
               else if (str_starts_with($selectedMonth, 'h')) {
                   $halves = [
                       'h1' => [1, 2, 3, 4, 5, 6],
@@ -46,17 +41,14 @@ with([
                   $months = $halves[$selectedMonth] ?? [];
                   $q->whereIn(\DB::raw('MONTH(date_created)'), $months);
               }
-              // 3. Jika pilih Bulan Spesifik (01, 02...)
               else {
                   $q->whereMonth('date_created', $selectedMonth);
               }
           }
       });
 
-      // Load data beserta session untuk elak N+1 query problem
       $allIdeas = $query->with('session')->get();
 
-      // 2. Jika pilih "KESELURUHAN" (Tiada Dept Spesifik)
       if (!$selectedDeptId) {
           return collect([[
               'name' => 'KESELURUHAN',
@@ -70,9 +62,7 @@ with([
           ]])->filter(fn($item) => $item['total'] > 0);
       }
 
-      // 3. Jika pilih Bahagian Spesifik
       return \App\Models\Department::where('id', $selectedDeptId)->get()->map(function($dept) use ($allIdeas) {
-          // Tapis idea yang belongs to this department melalui session
           $deptIdeas = $allIdeas->filter(function($idea) use ($dept) {
               return $idea->session->department_id == $dept->id;
           });
@@ -90,68 +80,19 @@ with([
       })->filter(fn($item) => $item['total'] > 0);
   },
 
-
-    //'barChartData' => function() {
-        //$selectedMonth = request('month');
-        //$selectedYear = request('year', date('Y'));
-        //$selectedDeptId = request('dept_id');
-
-        // Ambil data dari table departments
-        //return \App\Models\Department::when($selectedDeptId, function($query) use ($selectedDeptId) {
-                //return $query->where('id', $selectedDeptId);
-            //})
-            //->get()
-            //->map(function($dept) {
-                // Sini kita masih guna dummy rand() untuk angka,
-                // tapi $dept->name datang dari database
-              //  return [
-                    //'dept' => $dept->code,
-                    //'inovasi' => rand(5, 50),
-                    //'selain_inovasi' => rand(5, 40),
-                    //'total' => 1 // Just to pass the filter if you have one
-                //];
-            //})
-            //->values();
-    //},
-
-    //'barChartData' => function() {
-    //$selectedMonth = request('month');
-
-    //return \App\Models\Department::all()->map(function($dept) use ($selectedMonth) {
-        //$userIds = \App\Models\User::where('department_id', $dept->id)->pluck('id');
-
-        //$ideas = \App\Models\CoffeeBreakIdea::whereHas('session', function($q) use ($userIds) {
-                //$q->whereIn('created_by', $userIds);
-            //})
-            //->when($selectedMonth, function($q) use ($selectedMonth) {
-                //return $q->whereMonth('created_at', $selectedMonth);
-            //})
-            //->get();
-
-        //return [
-            //'dept' => $dept->code,
-            //'inovasi' => $ideas->where('category', 'inovasi')->count(),
-            //'selain_inovasi' => $ideas->where('category', 'selain_inovasi')->count(),
-            //'total' => $ideas->count()
-        //];
-    //})->filter(fn($item) => $item['total'] > 0)->values();
-//},
-
 'barChartData' => function() {
     $selectedMonth = request('month');
-    $selectedYear = request('year', date('Y')); // Default tahun semasa
+    $selectedYear = request('year', date('Y'));
     $selectedDeptId = request('dept_id');
 
-    // 1. Ambil data department berdasarkan penapis jika ada
     return \App\Models\Department::when($selectedDeptId, function($query) use ($selectedDeptId) {
             return $query->where('id', $selectedDeptId);
         })
         ->get()
         ->map(function($dept) use ($selectedMonth, $selectedYear) {
 
-            // 2. Tarik idea terus berdasarkan department_id yang ada pada session
             $ideas = \App\Models\CoffeeBreakIdea::whereHas('session', function($q) use ($dept) {
-                    $q->where('department_id', $dept->id); // Guna dept_id dari session terus
+                    $q->where('department_id', $dept->id);
                 })
                 ->whereYear('created_at', $selectedYear)
                 ->when($selectedMonth, function($q) use ($selectedMonth) {
@@ -159,7 +100,6 @@ with([
                 })
                 ->get();
 
-            // 3. Format data tepat seperti struktur chart anda
             return [
                 'dept'           => $dept->code,
                 'inovasi'        => $ideas->where('category', 'inovasi')->count(),
@@ -167,7 +107,6 @@ with([
                 'total'          => $ideas->count()
             ];
         })
-        // 4. Tapis keluar department yang tiada rekod langsung
         ->filter(fn($item) => $item['total'] > 0)
         ->values();
 },
@@ -176,7 +115,6 @@ with([
     'departments' => fn() => \App\Models\Department::all(),
 
     'availableYears' => function() {
-        // Jana senarai tahun (Contoh: 3 tahun ke belakang dari tahun semasa)
         $currentYear = date('Y');
         return range($currentYear, $currentYear - 2);
     }

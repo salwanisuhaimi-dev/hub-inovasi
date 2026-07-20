@@ -63,7 +63,7 @@ Route::get('/auth/google/callback', function () {
             return redirect()->to($redirectTo);
         }
 
-        if ($user->role === 'admin') {
+        if ($user->role === 'admin' || $user->role === 'superadmin') {
             return redirect()->intended(route('admin.dashboard'));
         }
 
@@ -118,11 +118,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/re-route', function () {
-        return auth()->user()->role === 'admin'
+        return in_array(auth()->user()->role, ['admin', 'superadmin'])
             ? redirect()->route('admin.dashboard')
             : redirect()->route('user.dashboard');
     })->name('re-route');
-
+    
 });
 
 /*
@@ -178,8 +178,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
         Volt::route('/pitch', 'pages.admin.pitch-index')
             ->name('admin.pitch');
-
-
 
     });
 
