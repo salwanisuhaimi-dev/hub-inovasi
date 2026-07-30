@@ -31,6 +31,7 @@ class Program extends Model
         'form_publication_id',
         'time_limit',
         'competition_id',
+        'created_by'
     ];
 
     public function category()
@@ -72,5 +73,10 @@ class Program extends Model
 
     public function quizSubmissions() {
         return $this->hasMany(QuizSubmission::class);
-    }    
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

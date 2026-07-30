@@ -1,16 +1,19 @@
 <?php
 
 use App\Models\Program;
-use function Livewire\Volt\{layout, state, with, usesFileUploads};
+use function Livewire\Volt\{layout, state, with, usesFileUploads, usesPagination};
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 layout('layouts.app');
 usesFileUploads();
+usesPagination();
+
 
 state([
     'showModal' => false,
     'editing' => null,
+    'search' => '',
     'title' => '',
     'category_id' => '',
     'publication_id' => '',
@@ -26,6 +29,9 @@ state([
     'image' => null,
     'currentImage' => '',
     'competition_id' => '',
+    'created_by' => '',
+    'date_from' => '',
+    'date_to' => '',
 ]);
 
 $edit = function (Program $program) {
@@ -45,12 +51,25 @@ $edit = function (Program $program) {
     $this->currentImage = $program->image_path ?? '';
     $this->image = null;
     $this->competition_id = $program->competition_id;
+    $this->created_by = $program->created_by;
 
     $this->showModal = true;
 };
 
 with([
-    'programs' => fn() => Program::latest()->get(),
+   'programs' => fn() => Program::latest()
+          ->when($this->search, function ($query) {
+              $query->where('title', 'like', '%' . $this->search . '%');
+            })
+            // Date From filter (start_date >= date_from)
+            ->when($this->date_from, function ($query) {
+              $query->whereDate('start_date', '>=', $this->date_from);
+            })
+            // Date To filter (start_date <= date_to)
+            ->when($this->date_to, function ($query) {
+              $query->whereDate('start_date', '<=', $this->date_to);
+            })
+            ->paginate(12),
     'categories' => fn() => \App\Models\ProgramType::where('is_active', '1')->orderBy('name')->get(),
     'competitions' => fn() => \App\Models\Competition::latest()->get(),
 ]);
@@ -67,6 +86,7 @@ $save = function () {
         'end_date' => 'nullable|date|after_or_equal:start_date',
         'image' => 'nullable|image|max:10420',
         'competition_id' => 'nullable',
+        'created_by' => 'required',
     ]);
 
     $payload = [
@@ -83,6 +103,7 @@ $save = function () {
         'form_publication_id' => $this->form_publication_id ?: null,
         'category_id' => $this->category_id ?: null,
         'competition_id' => $this->competition_id ?: null,
+        'created_by' => $this->created_by,
     ];
 
     if ($this->image) {
@@ -145,8 +166,13 @@ $delete = function ($id) {
 };
 
 $openCreateModal = function() {
-    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'time_limit', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id', 'competition_id']);
+    $this->reset(['editing', 'title', 'start_date', 'end_date', 'start_time', 'end_time', 'time_limit', 'location', 'description', 'deadline', 'image', 'currentImage', 'category_id', 'publication_id', 'form_publication_id', 'competition_id', 'created_by']);
+    $this->created_by = auth()->user()->id;
     $this->showModal = true;
+};
+
+$resetFilters = function () {
+    $this->reset(['search', 'date_from', 'date_to']);
 };
 
 ?>
@@ -163,6 +189,57 @@ $openCreateModal = function() {
             </svg>
             Tambah Program
         </button>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+        <!-- 1. Search Input -->
+        <div class="relative group w-80">
+            <input
+                type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Cari..."
+                class="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm outline-none transition-all duration-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-300 text-sm"
+            >
+            <div class="absolute right-3 top-2.5 text-slate-300 group-focus-within:text-indigo-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 2. Date From Input -->
+        <div class="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm">
+            <span class="text-xs font-medium text-slate-400">Dari:</span>
+            <input
+                type="date"
+                wire:model.live="date_from"
+                class="text-sm text-slate-700 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-pointer"
+            >
+        </div>
+
+        <!-- 3. Date To Input -->
+        <div class="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm">
+            <span class="text-xs font-medium text-slate-400">Hingga:</span>
+            <input
+                type="date"
+                wire:model.live="date_to"
+                class="text-sm text-slate-700 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-pointer"
+            >
+        </div>
+
+        <!-- 4. Proper Reset Semula Button -->
+        @if ($search || $date_from || $date_to)
+            <button
+                wire:click="resetFilters"
+                type="button"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl shadow-sm hover:bg-rose-100 hover:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500/20 active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+                <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Reset Semula
+            </button>
+        @endif
     </div>
 
     @if (session()->has('message'))
@@ -187,10 +264,29 @@ $openCreateModal = function() {
                     <tr class="hover:bg-gray-50/50 transition">
                         <td class="px-6 py-4">
                             <div class="font-bold text-gray-900">{{ $program->title }}</div>
-                            <div class="text-xs text-gray-500 truncate w-48">{{ $program->description }}</div>
+                            <!--<div class="text-xs text-gray-500 truncate w-48">{{ $program->description }}</div>-->
+                            <!-- Author (Subtext with User Icon) -->
+                            <div class="flex items-center gap-1.5 text-sm text-gray-500 mt-1">
+                                <!-- SVG User Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+
+                                <!-- Author Name using the author relation -->
+                                Disediakan oleh:
+                                            @if ($program->created_by === auth()->id())
+                                                <strong class="text-blue-600 font-semibold">Anda</strong>
+                                            @else
+                                                {{ $program->author->name ?? 'Kosong' }}
+                                            @endif
+                            </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-bold text-gray-900">{{ $program->category->name ?? 'Tiada Kategori' }}</div>
+                            <!-- Category (Main Title) -->
+                            <div class="font-bold text-gray-900 text-base">
+                                {{ $program->category->name ?? 'Tiada Kategori' }}
+                            </div>
+
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm text-gray-700 font-medium">
@@ -238,6 +334,11 @@ $openCreateModal = function() {
         </table>
     </div>
 
+    <div class="mt-10">
+        {{ $programs->links() }}
+    </div>
+
+
     @if($showModal)
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -256,7 +357,7 @@ $openCreateModal = function() {
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-sm font-bold text-gray-700 mb-2 italic">Kategori</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Kategori</label>
                             <select wire:model.live="category_id" class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                                 <option value="">Pilih Kategori</option>
                                 @foreach($categories as $category)
@@ -267,7 +368,7 @@ $openCreateModal = function() {
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-sm font-bold text-gray-700 mb-2 italic">Pertandingan</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Pertandingan</label>
                             <select wire:model.live="competition_id" class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                                 <option value="">Pilih Pertandingan</option>
                                 @foreach($competitions as $competition)
@@ -280,12 +381,12 @@ $openCreateModal = function() {
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-wider">Tarikh Mula</label>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Tarikh Mula Program</label>
                                 <input type="date" wire:model="start_date" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 @error('start_date') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-wider">Tarikh Tamat</label>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Tarikh Tamat Program</label>
                                 <input type="date" wire:model="end_date" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 @error('end_date') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                             </div>
@@ -338,7 +439,7 @@ $openCreateModal = function() {
                         @endif
 
                         <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Tarikh Tutup</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Tarikh Tutup Penyertaan</label>
                             <input type="date" wire:model="deadline" class="w-full rounded-xl border-gray-200">
                             @error('deadline') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                         </div>
@@ -349,13 +450,13 @@ $openCreateModal = function() {
                         </div>
 
                         <div>
-                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Penerangan</label>
+                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Penerangan</label>
                              <textarea wire:model="description" rows="3" placeholder="Berikan sedikit ringkasan tentang program ini..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-blue-500 transition-all"></textarea>
                              @error('description') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                             <label class="block text-xs font-black text-gray-700 uppercase mb-2">Pilih Dokumen Garis Panduan (Penerbitan)</label>
+                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Pilih Dokumen Garis Panduan (Penerbitan)</label>
                              <select wire:model="publication_id" class="w-full rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm">
                                    <option value="">-- Tiada Garis Panduan --</option>
                                    @foreach(\App\Models\Publication::latest()->get() as $pub)
@@ -365,7 +466,7 @@ $openCreateModal = function() {
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-xs font-black text-gray-700 uppercase mb-2">Pilih Dokumen Borang Permohonan</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Pilih Dokumen Borang Permohonan</label>
                             <select wire:model="form_publication_id" class="w-full rounded-xl border-gray-200 text-sm">
                                   <option value="">-- Tiada Borang Manual --</option>
                                   @foreach(\App\Models\Publication::latest()->get() as $pub)
@@ -375,7 +476,7 @@ $openCreateModal = function() {
                         </div>
 
                         <div class="mb-5">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Poster / Gambar Pertandingan</label>
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Poster / Gambar Pertandingan</label>
                             <div class="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-[2rem] p-6 bg-stone-50/50">
                                 @if ($image)
                                     <div class="relative w-40 h-40 mb-3">

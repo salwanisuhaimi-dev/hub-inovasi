@@ -49,14 +49,32 @@ $sortBy = function ($field) {
 };
 
 with([
-  'users' => fn() => User::latest()
-      ->when($this->search, function ($query) {
-          $query->where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('email', 'like', '%' . $this->search . '%');
-      })
-      ->orderBy($this->sortField, $this->sortDirection)
-      ->paginate(12),
+    'users' => function () {
+        $direction = in_array(strtolower($this->sortDirection), ['asc', 'desc'])
+            ? $this->sortDirection
+            : 'asc';
 
+        $orderSql = "CASE
+                        WHEN role = 'superadmin' THEN 1
+                        WHEN role = 'admin' THEN 2
+                        ELSE 3
+                     END";
+
+        return User::query()
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('email', 'like', '%' . $this->search . '%');
+            })
+            // If sorting by role, use custom SQL order
+            ->when($this->sortField === 'role',
+                fn($q) => $q->orderByRaw($orderSql . " " . $direction)
+            )
+            // If sorting by credits (or anything else like name/email), use standard orderBy
+            ->when($this->sortField !== 'role',
+                fn($q) => $q->orderBy($this->sortField, $direction)
+            )
+            ->paginate(12);
+    },
 ]);
 
 $save = function () {
@@ -89,7 +107,19 @@ $save = function () {
         session()->flash('message', 'Pengguna berjaya dikemaskini!');
     }
 
-    $this->reset();
+    $this->reset([
+            'name',
+            'email',
+            'credits',
+            'department_id',
+            'position',
+            'grade',
+            'telephone_num',
+            'office_num',
+            'role',
+            'editing'
+  ]);
+
     $this->showModal = false;
 };
 
@@ -158,6 +188,18 @@ $openCreateModal = function() {
                             </span>
                         </div>
                     </th>
+                    <th class="px-6 py-4 cursor-pointer group" wire:click="sortBy('credits')">
+                        <div class="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">
+                            Token
+                            <span class="text-gray-300">
+                                @if ($sortField === 'credits')
+                                    {{ $sortDirection === 'asc' ? '▲' : '▼' }}
+                                @else
+                                    ↕
+                                @endif
+                            </span>
+                        </div>
+                    </th>
                     <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Tindakan</th>
                 </tr>
             </thead>
@@ -175,6 +217,9 @@ $openCreateModal = function() {
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xs text-gray-500 mt-1 flex items-center">{{ $user->role }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-gray-500 mt-1 flex items-center">{{ $user->credits }}</div>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <div class="flex justify-end gap-3">
@@ -226,24 +271,63 @@ $openCreateModal = function() {
                             <label class="block text-xs font-black text-gray-400 uppercase mb-1">Nama</label>
                             <input type="text" wire:model="name" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500">
                         </div>
-
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-4">
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-wider">Emel</label>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Emel</label>
                                 <input type="text" wire:model="email"
                                 class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 @error('email') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-wider">Peranan</label>
-                            <select wire:model="role"
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Bahagian</label>
+                            <select wire:model="department_id" id="department_id" name="department_id"
                                 class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">-- Pilih Bahagian --</option>
+                                    @foreach(\App\Models\Department::orderBy('name')->get() as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    @endforeach
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('department_id')" />
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Telephone Number Field -->
+                            <div>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">No. Telefon Pejabat</label>
+                                <input type="text" wire:model="telephone_num"
+                                class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                @error('telephone_num') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Phone Number Field -->
+                            <div>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">No. Telefon Bimbit</label>
+                                <input type="text" wire:model="phone_num"
+                                class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                @error('phone_num') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Role Dropdown -->
+                            <div>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Peranan</label>
+                                <select wire:model="role"
+                                    class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                     <option value="">Pilih Peranan</option>
                                     <option value="admin">Admin</option>
                                     <option value="user">User</option>
-                            </select>
-                            @error('role') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                                </select>
+                                @error('role') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Credits Textbox -->
+                            <div>
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Kredit</label>
+                                <input type="number" wire:model="credits"
+                                    class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    placeholder="Masukkan jumlah kredit...">
+                                @error('credits') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                            </div>
                         </div>
                         <div class="pt-4 flex gap-3">
                             <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">

@@ -137,7 +137,7 @@
                     @endif
                 </nav>
 
-                @if(auth()->user()->role === 'admin')
+                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'superadmin' )
                     <div x-data="{ openSettings: false }" class="w-full">
                         <button type="button" @click="openSettings = !openSettings"
                                 class="flex items-center justify-between w-full px-4 py-3 text-sm font-bold text-gray-500 hover:text-blue-600 focus:outline-none">
