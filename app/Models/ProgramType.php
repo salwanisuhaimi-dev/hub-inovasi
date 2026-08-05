@@ -13,6 +13,7 @@ class ProgramType extends Model
         'level',
         'description',
         'is_active',
+        'submission_slug',
     ];
 
     public function programs()

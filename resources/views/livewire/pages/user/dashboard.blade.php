@@ -13,8 +13,32 @@ state([
 ]);
 
 with([
-   'programs' => fn() => Program::latest()
+  'programs' => fn() => Program::latest()
       ->where('deadline', '>=', now())
+      ->where(function ($query) {
+          // 1. Show all public programs (or legacy nulls)
+          $query->where('visibility_type', 'all')
+                ->orWhereNull('visibility_type');
+
+          // 2. OR show gated programs if the logged-in user owns a matching submission ID
+          if (auth()->check()) {
+              $userSubmissionIds = auth()->user()->submissions()->pluck('id')->toArray();
+
+              $query->orWhere(function ($subQuery) use ($userSubmissionIds) {
+                  $subQuery->where('visibility_type', 'program_participants')
+                           ->where(function ($jsonQuery) use ($userSubmissionIds) {
+                               if (!empty($userSubmissionIds)) {
+                                   foreach ($userSubmissionIds as $subId) {
+                                       $jsonQuery->orWhereJsonContains('target_submission_ids', (int) $subId);
+                                   }
+                               } else {
+                                   // Prevent empty array leakage for users with 0 submissions
+                                   $jsonQuery->whereRaw('1 = 0');
+                               }
+                           });
+              });
+          }
+      })
       ->withExists(['submissions as has_submitted' => function($query) {
           $query->where('user_id', auth()->id());
       }])
@@ -23,6 +47,8 @@ with([
     'myCoffB' => fn() => CoffeeBreakSession::where('created_by', auth()->id())->count(),
     'myPitches' => fn() => Pitch::where('user_id', auth()->id())->count(),
 ])
+
+
 ?>
 
 <x-slot name="header">

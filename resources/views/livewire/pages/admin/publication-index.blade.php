@@ -2,10 +2,11 @@
 
 use App\Models\Publication;
 use Livewire\WithFileUploads;
-use function Livewire\Volt\{layout, state, usesFileUploads, updated, computed};
+use function Livewire\Volt\{layout, state, with, usesFileUploads, updated, computed, usesPagination};
 
 layout('layouts.app');
 usesFileUploads();
+usesPagination();
 
 state([
     'showModal' => false,
@@ -19,11 +20,12 @@ state([
     'pdfs' => fn() => [],
     'existing_pdfs' => fn() => [],
     'new_pdfs' => fn() => [],
+    'is_active' => 1,
 ]);
 
-$publications = computed(function () {
-    return Publication::latest()->get();
-});
+with([
+    'publications' => fn () => Publication::latest()->paginate(15),
+]);
 
 updated(['new_pdfs' => function ($value) {
     if (!$value) return;
@@ -38,7 +40,7 @@ updated(['new_pdfs' => function ($value) {
 }]);
 
 $openCreateModal = function() {
-    $this->reset(['editing', 'title', 'description', 'type', 'url']);
+    $this->reset(['editing', 'title', 'description', 'type', 'url', 'is_active']);
     $this->year = date('Y');
     $this->pdfs = [];
     $this->existing_pdfs = [];
@@ -53,6 +55,7 @@ $edit = function (Publication $publication) {
     $this->type = $publication->type;
     $this->year = $publication->year;
     $this->url = $publication->url;
+    $this->is_active = $publication->is_active;
 
     $this->existing_pdfs = is_array($publication->pdf_paths) ? $publication->pdf_paths : [];
     $this->pdfs = [];
@@ -76,6 +79,14 @@ $removeExistingPdf = function ($index) {
     }
 };
 
+// Action to toggle status
+$toggleStatus = function () {
+    // Switch between 1 and 0
+    $this->is_active = $this->is_active === 1 ? 0 : 1;
+
+};
+
+
 $save = function () {
     $this->validate([
         'title' => 'required|string|max:255',
@@ -84,6 +95,7 @@ $save = function () {
         'year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
         'pdfs.*' => 'nullable|mimes:pdf,doc,docx|max:20480',
         'url' => 'nullable|string',
+        'is_active' => 'nullable',
     ]);
 
     if (!$this->editing && count($this->pdfs) === 0) {
@@ -105,6 +117,7 @@ $save = function () {
         'year' => $this->year,
         'pdf_paths' => $finalPaths,
         'created_by' => auth()->id(),
+        'is_active' => $this->is_active,
     ];
 
     if ($this->editing) {
@@ -116,7 +129,7 @@ $save = function () {
     }
 
     $this->showModal = false;
-    $this->reset(['editing', 'title', 'description', 'type']);
+    $this->reset(['editing', 'title', 'description', 'type', 'is_active']);
     $this->pdfs = [];
     $this->existing_pdfs = [];
     $this->new_pdfs = [];
@@ -126,6 +139,7 @@ $delete = function (Publication $publication) {
     $publication->delete();
     session()->flash('message', 'Dokumen rasmi berjaya dipadam dari sistem.');
 };
+
 
 ?>
 
@@ -167,7 +181,7 @@ $delete = function (Publication $publication) {
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-                @forelse($this->publications as $pub)
+                @forelse($publications as $pub)
                     <tr class="hover:bg-blue-50/10 transition-colors group">
                         {{-- Title & Description --}}
                         <td class="px-8 py-5">
@@ -279,6 +293,11 @@ $delete = function (Publication $publication) {
         </table>
     </div>
 
+    <div class="mt-10">
+        {{ $publications->links() }}
+    </div>
+
+
     @if($showModal)
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -374,6 +393,21 @@ $delete = function (Publication $publication) {
                              <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">URL</label>
                              <input type="text" wire:model="url" placeholder="cth: https://www.document.my" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-blue-500 transition-all">
                              @error('url') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
+                         </div>
+
+                         <div class="flex items-center justify-between p-3 border rounded-xl">
+                             <div>
+                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Status</span>
+                                 <span class="text-xs text-gray-400">Pilih samada dokumen ini aktif atau tidak</span>
+                             </div>
+
+                             <button
+                                 type="button"
+                                 wire:click="toggleStatus"
+                                 class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $is_active ? 'bg-blue-600' : 'bg-gray-300' }}"
+                             >
+                                 <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out {{ $is_active ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                             </button>
                          </div>
 
 

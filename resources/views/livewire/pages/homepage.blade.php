@@ -244,32 +244,48 @@ $checkAnswer = function ($key) {
                         </button>
                         @else
                         @php
-                        $hasApplied = false;
-                        if (auth()->check()) {
-                          $hasApplied = auth()->user()->submissions()
-                          ->where('program_id', $program->id)
-                          ->exists();
-                        }
+                            // Check if user is allowed to see/join this program
+                            $isUserAllowed = false;
+
+                            if (auth()->check()) {
+                                if ($program->visibility_type === 'all' || empty($program->visibility_type)) {
+                                    $isUserAllowed = true;
+                                } elseif ($program->visibility_type === 'program_participants') {
+                                    $targetSubmissions = $program->target_submission_ids ?? [];
+                                    $isUserAllowed = in_array((int) auth()->id(), array_map('intval', $targetSubmissions));
+                                }
+                            }
                         @endphp
 
                         @if(!auth()->check())
-                        <a href="{{ route('login') }}?intended={{ urlencode(url()->current()) }}"
-                              class="w-full py-4 bg-gray-50 text-gray-900 rounded-2xl font-bold text-sm group-hover:bg-purple-600 group-hover:text-white transition duration-300 block text-center">
-                              Sertai Kami
-                        </a>
+                            {{-- 1. Guest User --}}
+                            <a href="{{ route('login') }}?intended={{ urlencode(url()->current()) }}"
+                               class="w-full py-4 bg-gray-50 text-gray-900 rounded-2xl font-bold text-sm group-hover:bg-purple-600 group-hover:text-white transition duration-300 block text-center">
+                                Sertai Kami
+                            </a>
 
-                        @elseif($hasApplied)
-                        <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
-                              Telah sertai
-                        </button>
+                        @elseif($program->has_submitted ?? false)
+                            {{-- 2. User has already joined --}}
+                            <button class="w-full py-4 bg-gray-200 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed" disabled>
+                                Telah sertai
+                            </button>
+
+                        @elseif(!$isUserAllowed)
+                            {{-- 3. Logged-in user is NOT in the allowed list for restricted programs --}}
+                            <button class="w-full py-4 bg-gray-100 text-gray-400 rounded-2xl font-bold text-sm cursor-not-allowed flex items-center justify-center gap-1.5" disabled>
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Tertutup
+                            </button>
 
                         @else
-                        <a href="{{ route('project.submit', $program->id) }}"
-                              class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold text-sm transition duration-300 block text-center shadow-lg shadow-purple-100">
-                              Sertai Sekarang
-                        </a>
-                        @endif {{-- Menutup lapisan dalam (!auth()->check()) --}}
-
+                            {{-- 4. User is allowed AND hasn't submitted yet --}}
+                            <a href="{{ route('project.submit', $program->id) }}"
+                               class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold text-sm transition duration-300 block text-center shadow-lg shadow-purple-100">
+                                Sertai Sekarang
+                            </a>
+                        @endif
                         @endif
                    </div>
                 </div>
