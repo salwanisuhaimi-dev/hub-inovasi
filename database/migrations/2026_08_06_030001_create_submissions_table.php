@@ -12,16 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('submissions', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
-        $table->foreignId('program_id')->constrained()->onDelete('cascade'); 
-        $table->string('project_title'); 
-        $table->text('project_description');
-        $table->string('group_name'); 
-        $table->string('file_path')->nullable(); 
-        $table->string('status')->default('pending'); 
-        $table->timestamps();
-    });
+            $table->id();
+            $table->foreignId('program_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')
+                   ->constrained('users', 'id', 'fk_submissions_user_id')
+                   ->cascadeOnDelete();            
+            $table->timestamps();
+        });
     }
 
     /**

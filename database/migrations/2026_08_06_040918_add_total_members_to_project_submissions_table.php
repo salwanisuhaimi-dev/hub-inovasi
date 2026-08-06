@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('submissions', function (Blueprint $table) {
+        Schema::table('project_submissions', function (Blueprint $table) {
             $table->integer('total_members')->nullable()->after('group_name');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('submissions', function (Blueprint $table) {
+        Schema::table('project_submissions', function (Blueprint $table) {
             $table->dropColumn('total_members');
         });
     }

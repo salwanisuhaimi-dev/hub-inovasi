@@ -16,13 +16,6 @@ class Submission extends Model
     protected $fillable = [
         'program_id',
         'user_id',
-        'project_title',
-        'project_description',
-        'group_name',
-        'total_members',
-        'department_id',
-        'file_path',
-        'status',
     ];
 
     /**
@@ -43,8 +36,4 @@ class Submission extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function department(): BelongsTo
-    {
-        return $this->belongsTo(Department::class);
-    }
 }
