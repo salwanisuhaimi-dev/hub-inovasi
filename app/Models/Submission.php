@@ -27,13 +27,20 @@ class Submission extends Model
         return $this->belongsTo(Program::class);
     }
 
-    /**D
-     * Relationship
-     * $submission->user->name
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function projectDetail()
+    {
+        return $this->hasOne(ProjectSubmission::class, 'submission_id');
+    }
+
 
 }

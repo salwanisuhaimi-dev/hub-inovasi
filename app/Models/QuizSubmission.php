@@ -11,9 +11,7 @@ class QuizSubmission extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'quiz_type',
-        'program_id',
+        'submission_id',
         'total_questions',
         'correct_answers',
         'score',
@@ -23,7 +21,7 @@ class QuizSubmission extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
-    }    
+    }
 
 
 }

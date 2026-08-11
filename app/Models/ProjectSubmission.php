@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Submission extends Model
+class ProjectSubmission extends Model
 {
     use HasFactory;
 
@@ -15,24 +15,23 @@ class Submission extends Model
      */
     protected $fillable = [
         'submission_id',
+        'department_id',
         'project_title',
         'project_description',
         'group_name',
         'total_members',
-        'department_id',
         'file_path',
         'status',
     ];
 
+    public function submission(): BelongsTo
+    {
+        return $this->belongsTo(Submission::class);
+    }
 
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
-    }
-
-    public function submission(): BelongsTo
-    {
-        return $this->belongsTo(Submission::class);
     }
 
 }

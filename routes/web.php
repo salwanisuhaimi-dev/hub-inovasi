@@ -94,8 +94,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['profile.complete'])->group(function () {
 
-        Volt::route('/program/{program}/submit', 'pages.user.submit-project')
-            ->name('project.submit');
+        Volt::route('/submissions/{program}/{submission_slug}', 'pages.user.submissions.create')
+            ->name('submissions.create');
 
         Volt::route('/my-submissions', 'pages.user.my-submissions')
             ->name('user.submissions');
@@ -122,7 +122,7 @@ Route::middleware(['auth'])->group(function () {
             ? redirect()->route('admin.dashboard')
             : redirect()->route('user.dashboard');
     })->name('re-route');
-    
+
 });
 
 /*

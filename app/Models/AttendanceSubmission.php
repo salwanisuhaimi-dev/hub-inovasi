@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Submission extends Model
+class AttendanceSubmission extends Model
 {
     use HasFactory;
 
@@ -15,6 +15,7 @@ class Submission extends Model
      */
     protected $fillable = [
         'submission_id',
+        'target_submission_id',
         'dept_id',
         'pdf_path',
     ];

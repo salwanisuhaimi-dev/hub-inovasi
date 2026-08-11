@@ -2,7 +2,10 @@
 
 use App\Models\Program;
 use App\Models\Submission;
+use App\Models\ProjectSubmission;
 use function Livewire\Volt\{layout, state, usesFileUploads, with};
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 layout('layouts.app');
 
@@ -10,11 +13,11 @@ usesFileUploads();
 
 state([
     'program' => fn (Program $program) => $program,
+    'department_id' => fn () => auth()->user()->department_id ?? '',
     'project_title' => '',
     'project_description' => '',
     'group_name' => '',
     'total_members' => '',
-    'department_id' => fn () => auth()->user()->department_id ?? '',
     'file_upload' => null,
 ]);
 
@@ -24,11 +27,11 @@ with([
 
 $submit = function () {
     $this->validate([
+        'department_id' => $this->program->category_id == 5 ? 'nullable' : 'required|exists:departments,id',
         'project_title' => 'required|min:5|max:255',
         'project_description' => 'required|min:20',
         'group_name' => $this->program->category_id == 5 ? 'nullable' : 'required|min:3',
         'total_members' => $this->program->category_id == 5 ? 'nullable' : 'required|integer|min:1',
-        'department_id' => $this->program->category_id == 5 ? 'nullable' : 'required|exists:departments,id',
         'file_upload' => 'nullable|mimes:pdf,doc,docx,zip|max:10240',
     ]);
 
@@ -46,39 +49,164 @@ $submit = function () {
         $finalPath = $this->file_upload->store('submissions', 'public');
     }
 
-    Submission::create([
-        'program_id' => $this->program->id,
-        'user_id' => auth()->id(),
-        'project_title' => $this->project_title,
-        'project_description' => $this->project_description,
-        'group_name' => $this->program->category_id == 5 ? null : $this->group_name,
-        'total_members' => $this->program->category_id == 5 ? null : $this->total_members,
-        'department_id' => $this->program->category_id == 5 ? null : $this->department_id,
-        'file_path' => $finalPath,
-        'status' => 'pending',
-    ]);
+    try {
+            // DB Transaction memastikan kedua-dua rekod (Submission & ProjectSubmission) selamat disimpan
+            DB::transaction(function () use ($finalPath) {
 
+                // 1. Cipta Central Submission Anchor
+                $submission = Submission::create([
+                    'program_id' => $this->program->id,
+                    'user_id'    => auth()->id(),
+                ]);
+
+                // 2. Cipta ProjectSubmission menggunakan $submission->id
+                ProjectSubmission::create([
+                    'submission_id'       => $submission->id, // Pass ID secara automatik di sini
+                    'department_id'       => $this->program->category_id == 5 ? null : $this->department_id,
+                    'project_title'       => $this->project_title,
+                    'project_description' => $this->project_description,
+                    'group_name'          => $this->program->category_id == 5 ? null : $this->group_name,
+                    'total_members'       => $this->program->category_id == 5 ? null : $this->total_members,
+                    'file_path'           => $finalPath,
+                    'status'              => 'pending',
+                ]);
+            });
+
+        } catch (\Throwable $e) {
+            // Padam fail dari storage jika DB gagal menyimpan data (Clean-up)
+            if ($finalPath) {
+                Storage::disk('public')->delete($finalPath);
+            }
+
+            session()->flash('error', 'Gagal menyimpan penyertaan. Sila cuba lagi.');
+            return;
+        }
     session()->flash('success', 'Penyertaan berjaya dihantar!');
     return $this->redirectRoute('user.submissions', navigate: true);
 };
 
+$downloadDocument = function () {
+    /** @var Program $program */
+    $program = $this->program;
+
+    $publication = $program->formPublication ?? null;
+
+    if (!$publication || !$publication->pdf_paths) {
+        session()->flash('error', 'Dokumen tidak dijumpai.');
+        return;
+    }
+
+    $paths = $publication->pdf_paths;
+    $fileName = is_array($paths) ? ($paths[0] ?? null) : $paths;
+
+    if (!$fileName) {
+        session()->flash('error', 'Nama fail tidak sah.');
+        return;
+    }
+
+    $relativePath = ltrim($fileName, '/');
+    if (!Str::startsWith($relativePath, 'publications/')) {
+        $relativePath = 'publications/' . $relativePath;
+    }
+
+    if (!Storage::disk('public')->exists($relativePath)) {
+        session()->flash('error', 'Fail tiada dalam storan.');
+        return;
+    }
+
+    $extension = pathinfo($relativePath, PATHINFO_EXTENSION) ?: 'pdf';
+
+    $title = $publication->title ?? $program->title ?? 'Unknown';
+    $downloadName = Str::slug($title) . '.' . $extension;
+
+    return Storage::disk('public')->download($relativePath, $downloadName);
+};
+
+$downloadSecondDocument = function () {
+    /** @var Program $program */
+    $program = $this->program;
+
+    $secondDoc = $program->publication ?? null;
+
+    if (!$secondDoc || !$secondDoc->pdf_paths) {
+        session()->flash('error', 'Dokumen rujukan tidak dijumpai.');
+        return;
+    }
+
+    $paths = $secondDoc->pdf_paths;
+    $fileName = is_array($paths) ? ($paths[0] ?? null) : $paths;
+
+    if (!$fileName) return;
+
+    $relativePath = ltrim($fileName, '/');
+    if (!Str::startsWith($relativePath, 'publications/')) {
+        $relativePath = 'publications/' . $relativePath;
+    }
+
+    if (!Storage::disk('public')->exists($relativePath)) {
+        session()->flash('error', 'Fail rujukan tiada dalam storan.');
+        return;
+    }
+
+    $extension = pathinfo($relativePath, PATHINFO_EXTENSION) ?: 'pdf';
+    $title = $secondDoc->title ?? 'dokumen-rujukan';
+
+    return Storage::disk('public')->download($relativePath, Str::slug($title) . '.' . $extension);
+};
+
 ?>
 
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
 
-        <div class="mb-8">
-            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Hantar Penyertaan</h2>
-            <div class="mt-2 flex items-center gap-2">
-                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase rounded-full">
-                    {{ $program->title }}
-                </span>
-            </div>
-        </div>
+<div class="py-2">
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+      <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+              <h2 class="text-3xl font-black text-gray-900 tracking-tight">Hantar Penyertaan</h2>
+              <div class="mt-2 flex items-center gap-2">
+                  <span class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase rounded-full">
+                      {{ $program->title }}
+                  </span>
+              </div>
+          </div>
+
+          <div class="flex flex-col items-start md:items-end">
+              @if (session()->has('error'))
+                  <div class="mb-2 text-sm text-red-600">
+                      {{ session('error') }}
+                  </div>
+              @endif
+
+              <div class="flex flex-wrap items-center gap-2">
+                  @if($program->formPublication && $program->formPublication->pdf_paths)
+                      <button
+                          wire:click="downloadDocument"
+                          type="button"
+                          class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md shadow-sm transition">
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                          </svg>
+                          Dokumen/ Borang
+                      </button>
+                  @endif
+
+                  <!-- Butang Dokumen 2 -->
+                  @if(isset($program->publication) && $program->publication?->pdf_paths)
+                      <button
+                          wire:click="downloadSecondDocument"
+                          type="button"
+                          class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium rounded-md shadow-sm transition">
+                          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                          </svg>
+                          Garis Panduan
+                      </button>
+                  @endif
+              </div>
+          </div>
+      </div>
 
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-[2rem] border border-gray-100">
             <form wire:submit.prevent="submit" class="p-8 md:p-12 space-y-6">
-
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2 italic">
                       @if($program->category_id == 5)
@@ -113,7 +241,7 @@ $submit = function () {
                     <div class="mt-4">
                         <label class="block text-sm font-bold text-gray-700 mb-2 italic">Bilangan Ahli Kumpulan</label>
                         <select wire:model="total_members"
-                              class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4 font-semibold">
+                              class="w-full rounded-2xl border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 p-4">
                               <option value="">Pilih Bilangan Ahli (2 - 10 Orang)</option>
 
                               @foreach(range(2, 10) as $number)
@@ -140,7 +268,7 @@ $submit = function () {
                         x-on:livewire-upload-finish="uploading = false"
                         x-on:livewire-upload-error="uploading = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress">
-                        <label class="block text-sm font-bold text-gray-700 mb-2 italic">Laporan</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2 italic">Borang/ Dokumen Sokongan</label>
                         <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-3xl hover:border-blue-400 transition-colors">
                             <div class="space-y-1 text-center">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">

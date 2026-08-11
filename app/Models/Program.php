@@ -78,14 +78,14 @@ class Program extends Model
             return false;
         }
 
-        return QuizSubmission::where('user_id', auth()->id())
-            ->where('program_id', $this->id)
-            ->exists();
+        return $this->submissions()
+                    ->where('user_id', auth()->id())
+                    ->exists();
     }
-
+    
     public function competition()
     {
-        // Program mempunyai satu detail competition (TOR)
+        // One program. one detail competition (TOR)
         return $this->hasOne(Competition::class, 'program_id');
     }
 
@@ -103,6 +103,12 @@ class Program extends Model
         return $this->morphOne(ActivityLog::class, 'loggable')
             ->where('action', 'updated')
             ->latestOfMany();
+    }
+
+    public function targetedSubmissions()
+    {
+        $ids = $this->targeted_submission_ids ?? [];
+        return Submission::with('projectDetail')->whereIn('id', $ids)->get();
     }
 
 }

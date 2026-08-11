@@ -9,20 +9,7 @@ use function Livewire\Volt\{layout, with};
 layout('layouts.app');
 
 with([
-    'programs' => function() {
-        return Program::latest()
-            ->withCount(['submissions', 'quizSubmissions'])
-            ->get()
-            ->map(function ($program) {
-                if ($program->category_id == 3) {
-                    $program->submissions_count = $program->quiz_submissions_count;
-                }
-
-                unset($program->quiz_submissions_count);
-
-                return $program;
-            });
-    }
+    'programs' => fn () => Program::latest()->withCount('submissions')->get(),
 ]);
 ?>
 

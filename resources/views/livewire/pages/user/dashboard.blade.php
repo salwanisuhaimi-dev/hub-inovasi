@@ -220,9 +220,9 @@ with([
                           Telah Memohon
                       </button>
                   @else
-                      <a href="{{ route('project.submit', $program->id) }}"
-                          class="block w-full text-center py-4 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-100">
-                          Sertai Sekarang
+                      <a href="{{ route('submissions.create', ['program' => $program->id, 'submission_slug' => $program->category->submission_slug]) }}"
+                            class="block w-full text-center py-4 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                            Sertai Sekarang
                       </a>
                   @endif
                 </div>

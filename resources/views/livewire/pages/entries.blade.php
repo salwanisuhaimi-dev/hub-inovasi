@@ -456,7 +456,7 @@ $delete = function ($id) {
                                                 Telah Memohon
                                             </button>
                                         @else
-                                            <a href="{{ route('project.submit', $program->id) }}"
+                                            <a href="{{ route('submissions.create', ['program' => $program->id, 'submission_slug' => $program->category->submission_slug]) }}"
                                                 class="bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-[10px] uppercase tracking-widest py-2 px-5 rounded-xl text-center transition-all duration-300 transform active:scale-95 whitespace-nowrap shadow-sm block w-full sm:w-auto">
                                                 Sertai
                                             </a>

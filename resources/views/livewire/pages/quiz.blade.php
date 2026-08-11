@@ -4,6 +4,7 @@ use function Livewire\Volt\{layout, state, computed};
 use App\Models\Review;
 use App\Models\Quiz;
 use App\Models\Program;
+use App\Models\Submission;
 use App\Models\QuizSubmission;
 use Carbon\Carbon;
 
@@ -132,9 +133,15 @@ $startQuiz = function ($type, $programId = null) {
 };
 
 $submitScore = function ($score, $totalQuestions, $correctAnswers, $timeTaken) {
-    QuizSubmission::create([
-        'user_id' => auth()->id(),
+
+    $newSubmission = Submission::create([
         'program_id' => $this->programId,
+        'user_id' => Auth::id(),
+    ]);
+
+
+    QuizSubmission::create([
+        'submission_id' => $newSubmission->id,
         'total_questions' => $totalQuestions,
         'correct_answers' => $correctAnswers,
         'score' => $score,
@@ -412,18 +419,18 @@ $submitScore = function ($score, $totalQuestions, $correctAnswers, $timeTaken) {
                                     <div class="w-32 h-32 bg-[#63249d] rounded-[40px] flex items-center justify-center shadow-2xl rotate-[-6deg] group-hover:rotate-0 transition-all duration-500">
                                         <span class="text-6xl">🧠</span>
                                     </div>
-                                    <div class="absolute -bottom-1 -right-3 bg-[#d651e0] text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg border-4 border-[#faf7f2]">
+                                    <!--<div class="absolute -bottom-1 -right-3 bg-[#d651e0] text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg border-4 border-[#faf7f2]">
                                         New
-                                    </div>
+                                    </div>-->
                                 </div>
 
                                 <div class="flex-1 space-y-6">
                                     <div class="space-y-2">
-                                        <h4 class="text-3xl font-black text-[#2d1b69] uppercase italic leading-[0.9] tracking-tighter">
-                                            Kuiz Inovasi Digital 2026
+                                        <h4 class="text-3xl font-black text-[#2d1b69] uppercase leading-[0.9] tracking-tighter">
+                                            {{ $program->title }}
                                         </h4>
                                         <p class="text-sm text-[#a08cc5] font-medium italic">
-                                            Uji pengetahuan transformasi digital jabatan.
+                                            {{ $program->description }}
                                         </p>
                                     </div>
 
@@ -588,7 +595,7 @@ $submitScore = function ($score, $totalQuestions, $correctAnswers, $timeTaken) {
                                 <button @click="nextQuestion()"
                                         :disabled="selectedAnswer === null"
                                         class="px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 transition disabled:opacity-50 shadow-lg shadow-blue-100">
-                                    <span x-text="currentIndex === questions.length - 1 ? 'Hantar Jawapan 🏁' : 'Soalan Seterusnya ➡️'"></span>
+                                    <span x-text="currentIndex === questions.length - 1 ? 'Hantar Jawapan 🏁' : 'Soalan Seterusnya'"></span>
                                 </button>
                             </div>
                         </div>
@@ -616,7 +623,7 @@ $submitScore = function ($score, $totalQuestions, $correctAnswers, $timeTaken) {
 
                             <button @click="$wire.submitScore(score, questions.length, correctCount, timeTaken)"
                                     class="px-8 py-3.5 bg-gray-900 text-white font-black text-sm rounded-xl hover:bg-gray-800 transition w-full max-xs shadow-xl shadow-gray-200">
-                                Simpan & Lihat Keputusan
+                                Simpan
                             </button>
                         </div>
                     </template>

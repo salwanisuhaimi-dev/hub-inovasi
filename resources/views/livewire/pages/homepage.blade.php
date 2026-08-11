@@ -281,7 +281,7 @@ $checkAnswer = function ($key) {
 
                         @else
                             {{-- 4. User is allowed AND hasn't submitted yet --}}
-                            <a href="{{ route('project.submit', $program->id) }}"
+                            <a href="{{ route('submissions.create', ['program' => $program->id, 'submission_slug' => $program->category->submission_slug]) }}"
                                class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold text-sm transition duration-300 block text-center shadow-lg shadow-purple-100">
                                 Sertai Sekarang
                             </a>
