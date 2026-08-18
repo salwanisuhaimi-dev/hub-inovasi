@@ -2,7 +2,7 @@
 
 use App\Models\Archive;
 use App\Models\Competition;
-use function Livewire\Volt\{layout, state, with, usesFileUploads};
+use function Livewire\Volt\{layout, state, with, usesFileUploads, usesPagination};
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
@@ -11,10 +11,13 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 layout('layouts.app');
 usesFileUploads();
+usesPagination();
 
 state([
     'showModal' => false,
     'editing' => null,
+    'search' => '',
+    'selectedCompetition' => '',
     'department_id' => '',
     'project_name' => '',
     'group_name' => '',
@@ -68,7 +71,16 @@ $edit = function (Archive $archive) {
 };
 
 with([
-    'archives' => fn() => Archive::with(['department', 'competitions'])->latest()->get(),
+    'archives' => fn() => Archive::with(['department', 'competitions'])->latest()
+            ->when($this->search, function ($query) {
+                $query->where('project_name', 'like', '%' . $this->search . '%');
+              })
+              ->when($this->selectedCompetition, function ($query) {
+                      $query->whereHas('competitions', function ($q) {
+                          $q->where('competitions.id', $this->selectedCompetition);
+                      });
+              })
+              ->paginate(12),
     'departments' => fn() => \App\Models\Department::where('status', 'aktif')->orderBy('name')->get(),
     'competitions' => fn() => Competition::where('status', 'aktif')->orderBy('name')->get(),
 ]);
@@ -228,6 +240,38 @@ $viewDetails = function ($id) {
 
     </div>
 
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+        <!-- 1. Search Input -->
+        <div class="relative group w-80">
+            <input
+                type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Cari..."
+                class="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm outline-none transition-all duration-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-300 text-sm"
+            >
+            <div class="absolute right-3 top-2.5 text-slate-300 group-focus-within:text-indigo-500 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="relative group w-48">
+              <select
+                  wire:model.live="selectedCompetition"
+                  class="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm outline-none transition-all duration-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 text-slate-600 text-sm appearance-none cursor-pointer"
+              >
+                  <option value="">Pilih Pertandingan...</option>
+                  @foreach($competitions as $competition)
+                      <option value="{{ $competition->id }}">
+                          {{ $competition->name }}
+                      </option>
+                  @endforeach
+              </select>
+        </div>
+    </div>
+
+
     @if (session()->has('message'))
         <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 font-bold">
             {{ session('message') }}
@@ -302,9 +346,9 @@ $viewDetails = function ($id) {
                 @else
                     <span class="text-gray-300 text-xs italic">Tiada data</span>
                 @endif
-                    <span class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-100 uppercase">
+                    <!--<span class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-100 uppercase">
                         TREK {{ $archive->track }}
-                    </span>
+                    </span>-->
                 </td>
                 <td class="px-6 py-4 text-center">
                     @if($archive->video_link)
@@ -362,6 +406,11 @@ $viewDetails = function ($id) {
     </tbody>
 </table>
 </div>
+
+<div class="mt-10">
+    {{ $archives->links() }}
+</div>
+
 
     @if($showModal)
         <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
