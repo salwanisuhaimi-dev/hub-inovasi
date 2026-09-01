@@ -97,6 +97,9 @@ Route::middleware(['auth'])->group(function () {
         Volt::route('/submissions/{program}/{submission_slug}', 'pages.user.submissions.create')
             ->name('submissions.create');
 
+        Volt::route('/submissions/{program}/{submission_slug}/{submission?}', 'pages.user.submissions.create')
+            ->name('submissions.edit');
+
         Volt::route('/my-submissions', 'pages.user.my-submissions')
             ->name('user.submissions');
 

@@ -2,6 +2,7 @@
 // resources/views/livewire/pages/user/dashboard.blade.php
 use App\Models\Program;
 use App\Models\Submission;
+use App\Models\ProgramType;
 use App\Models\CoffeeBreakSession;
 use App\Models\Pitch;
 use function Livewire\Volt\{layout, state, with};
@@ -15,6 +16,9 @@ state([
 with([
   'programs' => fn() => Program::latest()
       ->where('deadline', '>=', now())
+      ->whereHas('category', function ($typeQuery) {
+            $typeQuery->where('requires_submission', true);
+      })
       ->where(function ($query) {
           // 1. Show all public programs (or legacy nulls)
           $query->where('visibility_type', 'all')
@@ -215,10 +219,6 @@ with([
 
                 <div class="mt-auto pt-4">
                   @if($program->has_submitted)
-                      <button type="button" disabled
-                          class="block w-full text-center py-4 bg-emerald-100 text-emerald-700 rounded-2xl font-black text-sm cursor-not-allowed flex items-center justify-center gap-2">
-                          Telah Memohon
-                      </button>
                   @else
                       <a href="{{ route('submissions.create', ['program' => $program->id, 'submission_slug' => $program->category->submission_slug]) }}"
                             class="block w-full text-center py-4 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-100">

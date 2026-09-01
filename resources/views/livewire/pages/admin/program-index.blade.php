@@ -33,11 +33,17 @@ state([
     'created_by' => '',
     'date_from' => '',
     'date_to' => '',
+    'other_submission_format' => 'notes',
+    'submission_external_link' => '',
+    'submission_pdf_form' => null,
+    'existing_submission_pdf_form' => null,
     'showGlobalHistory' => false,
 
     // Visibility Settings
     'visibility_type' => 'all', // 'all' or 'program_participants'
     'target_program_id' => '',  // Bound to the single select dropdown in UI
+
+
 ]);
 
 $edit = function (Program $program) {
@@ -63,7 +69,20 @@ $edit = function (Program $program) {
     $this->visibility_type = $program->visibility_type ?? 'all';
     $this->target_program_id = is_array($program->target_program_ids) ? ($program->target_program_ids[0] ?? '') : '';
 
+    if ((int) $program->category_id === 8) {
+        $this->other_submission_format = $program->other_submission_format ?? 'notes';
+        $this->submission_external_link = $program->submission_external_link ?? '';
+        $this->existing_submission_pdf_form = $program->submission_pdf_form ?? null;
+    } else {
+        // Reset jika bertukar ke kategori biasa
+        $this->other_submission_format = 'notes';
+        $this->submission_external_link = '';
+        $this->existing_submission_pdf_form = null;
+    }
+
+    $this->submission_pdf_form = null;
     $this->showModal = true;
+
 };
 
 with([
@@ -123,6 +142,38 @@ $save = function () {
             ->toArray();
     }
 
+    if ((int) $this->category_id === 8) {
+        $rules['other_submission_format'] = 'required|in:notes,external_link,upload_form';
+
+        if ($this->other_submission_format === 'external_link') {
+            $rules['submission_external_link'] = 'required|url';
+        }
+
+        if ($this->other_submission_format === 'upload_form') {
+            // Hanya wajib jika baru dimuat naik (elak ralat bila edit)
+            $rules['submission_pdf_form'] = ($this->submission_pdf_form || !$this->existing_submission_pdf_form)
+                        ? 'required|file|mimes:pdf,doc,docx|max:10240'
+                        : 'nullable';
+        }
+    }
+
+    $this->validate($rules);
+
+    // 4. Pengendalian Muat Naik Fail PDF (Kategori 8)
+    $pdfPath = $this->existing_submission_pdf_form;
+
+    if ((int) $this->category_id === 8 && $this->other_submission_format === 'upload_form') {
+        if ($this->submission_pdf_form instanceof \Illuminate\Http\UploadedFile) {
+            // Padam fail lama jika wujud apabila muat naik fail baharu
+            if ($this->existing_submission_pdf_form && Storage::disk('public')->exists($this->existing_submission_pdf_form)) {
+                Storage::disk('public')->delete($this->existing_submission_pdf_form);
+            }
+            $pdfPath = $this->submission_pdf_form->store('program_forms', 'public');
+        }
+    } else {
+        $pdfPath = null;
+    }
+
     $payload = [
         'title' => $this->title,
         'start_date' => $this->start_date ?: null,
@@ -141,6 +192,9 @@ $save = function () {
         'visibility_type' => $this->visibility_type,
         'target_program_ids' => $targetProgramIds,
         'target_submission_ids' => $targetSubmissionIds,
+        'other_submission_format' => ((int) $this->category_id === 8) ? $this->other_submission_format : null,
+        'submission_external_link' => ((int) $this->category_id === 8 && $this->other_submission_format === 'external_link') ? $this->submission_external_link : null,
+        'submission_pdf_form' => $pdfPath
     ];
 
     if ($this->image) {
@@ -449,6 +503,73 @@ $closeGlobalHistoryModal = function () {
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                             </div>
+
+                            @if((int) $category_id === 8)
+                                <div class="p-5 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-4 mt-4">
+                                     <div class="flex items-center justify-between border-b border-blue-100 pb-3">
+                                          <h4 class="text-xs font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                                              Jenis Penyertaan
+                                          </h4>
+                                     </div>
+
+                                     {{-- 1. PILIHAN FORMAT PENYERTAAN --}}
+                                     <div>
+                                          <label class="block text-xs font-black text-gray-500 uppercase mb-1">
+                                            Format Penyertaan <span class="text-red-500">*</span>
+                                          </label>
+                                          <select wire:model.live="other_submission_format" class="w-full rounded-xl border-gray-200 bg-white focus:border-blue-500 focus:ring-blue-500 p-3 text-sm font-bold text-gray-700">
+                                                <option value="notes">Teks Sahaja</option>
+                                                <option value="external_link">Pautan Luar / Google Forms</option>
+                                                <option value="upload_form">Muat Naik Borang</option>
+                                          </select>
+                                          @error('other_submission_format') <span class="text-red-500 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                     </div>
+
+                                     {{-- 2. INPUT PAUTAN URL (Hanya jika 'external_link' dipilih) --}}
+                                     @if($other_submission_format === 'external_link')
+                                     <div class="pt-2">
+                                          <label class="block text-xs font-black text-gray-700 uppercase mb-1">
+                                              Pautan URL Borang Luar <span class="text-red-500">*</span>
+                                          </label>
+                                          <input type="url"
+                                                wire:model="submission_external_link"
+                                                placeholder="https://forms.google.com/..."
+                                                class="w-full rounded-xl border-gray-200 bg-white p-3 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                          <p class="text-[10px] text-gray-400 mt-1">Sediakan pautan Google Form, Drive, atau laman web luar untuk diakses peserta.</p>
+                                          @error('submission_external_link') <span class="text-red-500 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                     </div>
+                                     @endif
+
+                                     @if($other_submission_format === 'upload_form')
+                                     <div class="pt-2">
+                                          <label class="block text-xs font-black text-gray-700 uppercase mb-1">
+                                                Muat Naik Borang Templat (PDF / Word) <span class="text-red-500">*</span>
+                                          </label>
+
+                                          @if($existing_submission_pdf_form)
+                                          <div class="mb-3 p-3 bg-white rounded-xl border border-blue-200 flex items-center justify-between shadow-sm">
+                                               <div class="flex items-center gap-2">
+                                                    <div>
+                                                        <span class="text-xs font-bold text-gray-800 block">Fail Sedia Ada</span>
+                                                        <span class="text-[10px] text-gray-400">Muat naik fail baharu di bawah jika mahu menggantikannya.</span>
+                                                    </div>
+                                              </div>
+                                              <a href="{{ Storage::url($existing_submission_pdf_form) }}" target="_blank" class="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition">
+                                                    Lihat Fail
+                                              </a>
+                                          </div>
+                                          @endif
+
+                                          <input type="file"
+                                              wire:model="submission_pdf_form"
+                                              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                              class="w-full text-sm text-gray-500 bg-white border border-gray-200 rounded-xl p-2.5 focus:border-blue-500">
+                                              <p class="text-[10px] text-gray-400 mt-1">Maksimum saiz fail: 10MB (Format PDF, DOC, atau DOCX)</p>
+                                          @error('submission_pdf_form') <span class="text-red-500 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                    </div>
+                                    @endif
+                              </div>
+                           @endif
 
                             {{-- 3. Pertandingan --}}
                             <div>

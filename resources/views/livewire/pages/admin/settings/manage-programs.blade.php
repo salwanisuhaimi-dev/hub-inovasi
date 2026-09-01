@@ -3,20 +3,24 @@
 use App\Models\ProgramType;
 use function Livewire\Volt\{layout, state, with, usesFileUploads};
 
-layout('layouts.app'); 
+layout('layouts.app');
 usesFileUploads();
 
 state([
     'showModal' => false,
     'editing' => null,
     'name' => '',
-    'is_active' => '',
+    'is_active' => true,
+    'requires_submission' => false,
+    'submission_slug' => '',
 ]);
 
 $edit = function (ProgramType $programtype) {
     $this->editing = $programtype->id;
     $this->name = $programtype->name;
     $this->is_active = $programtype->is_active;
+    $this->requires_submission = (bool) $programtype->requires_submission;
+    $this->submission_slug = $programtype->submission_slug ?? '';
 
     $this->showModal = true;
 };
@@ -26,12 +30,19 @@ with([
 ]);
 
 $save = function () {
+    // Pengesahan dinamik: submission_slug wajib jika requires_submission = true
     $data = $this->validate([
-        'name' => 'required',
+        'name' => 'required|string|max:255',
+        'is_active' => 'boolean',
+        'requires_submission' => 'boolean',
+        'submission_slug' => $this->requires_submission ? 'required|string|max:255' : 'nullable|string|max:255',
     ]);
 
     $payload = [
         'name' => $this->name,
+        'is_active' => $this->is_active ?? true,
+        'requires_submission' => $this->requires_submission,
+        'submission_slug' => $this->requires_submission ? $this->submission_slug : null,
     ];
 
     if ($this->editing) {
@@ -42,13 +53,18 @@ $save = function () {
         session()->flash('message', 'Kategori Program berjaya disimpan!');
     }
 
-    $this->reset(); 
+    $this->reset(['editing', 'name', 'is_active', 'requires_submission', 'submission_slug']);
     $this->showModal = false;
-    session()->flash('message', 'Kategori Program berjaya disimpan!');
+};
+
+$delete = function ($id) {
+    ProgramType::find($id)->delete();
+    session()->flash('message', 'Kategori Program berjaya dipadam!');
 };
 
 $openCreateModal = function() {
-    $this->reset(['editing', 'name']);
+    $this->reset(['editing', 'name', 'requires_submission', 'submission_slug']);
+    $this->is_active = true;
     $this->showModal = true;
 };
 
@@ -79,7 +95,8 @@ $openCreateModal = function() {
             <thead class="bg-gray-50 border-b border-gray-100">
                 <tr>
                     <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Nama</th>
-                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
+                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Terima Penyertaan</th>
+                    <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Link Penyertaan</th>
                     <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Tindakan</th>
                 </tr>
             </thead>
@@ -90,19 +107,28 @@ $openCreateModal = function() {
                             <div class="font-bold text-gray-900">{{ $programtype->name }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-bold text-gray-900">{{ $programtype->is_active }}</div>
+                            @if($programtype->requires_submission)
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Ya</span>
+                            @else
+                                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">Tidak</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-mono">
+                                {{ $programtype->submission_slug ?? '-' }}
+                            </code>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <div class="flex justify-end gap-3">
-                                <button wire:click="edit({{ $programtype->id }})" 
-                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group" 
+                                <button wire:click="edit({{ $programtype->id }})"
+                                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
                                     title="Edit Kategori">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                 </button>
 
-                                <button wire:click="delete({{ $programtype->id }})" 
+                                <button wire:click="delete({{ $programtype->id }})"
                                     wire:confirm="Adakah anda pasti mahu memadam Kategori ini?"
                                     class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     title="Padam Kategori">
@@ -111,7 +137,7 @@ $openCreateModal = function() {
                                     </svg>
                                 </button>
                             </div>
-                        </td>                    
+                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -126,20 +152,41 @@ $openCreateModal = function() {
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showModal', false)"></div>
-                
+
                 <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-8">
                     <h3 class="text-xl font-black text-gray-900 mb-6">
                         {{ $editing ? 'Kemaskini Kategori' : 'Tambah Kategori Baru' }}
                     </h3>
-                    
+
                     <form wire:submit.prevent="save" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Nama</label>
-                            <input type="text" wire:model="name" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500">
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-1">Nama Kategori</label>
+                            <input type="text" wire:model="name" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 p-3 text-sm">
+                            @error('name') <span class="text-xs text-red-500 mt-1">{{ $message }}</span> @enderror
                         </div>
+
+                        {{-- Toggle Requires Submission --}}
+                        <div class="pt-2">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" wire:model.live="requires_submission" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm font-bold text-gray-700">Terima Penyertaan?</span>
+                            </label>
+                        </div>
+
+                        {{-- Medan Submission Slug (Hanya muncul jika requires_submission = true) --}}
+                        @if($requires_submission)
+                            <div class="pt-2">
+                                <label class="block text-xs font-black text-gray-400 uppercase mb-1">Submission Slug <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="submission_slug" placeholder="Contoh: take-quiz, submit-project" class="w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 p-3 text-sm">
+                                <p class="text-[11px] text-gray-400 mt-1">Nama komponen borang penyerahan (cth: submit-project, confirm-attendance, take-quiz).</p>
+                                @error('submission_slug') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                        @endif
+
                         <div class="pt-4 flex gap-3">
                             <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
-                                {{ $editing ? 'Simpan Perubahan' : 'Simpan Kategori' }}                            </button>
+                                {{ $editing ? 'Simpan Perubahan' : 'Simpan Kategori' }}
+                            </button>
                             <button type="button" wire:click="$set('showModal', false)" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">Batal</button>
                         </div>
                     </form>

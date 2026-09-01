@@ -34,24 +34,39 @@ $edit = function (Quiz $quiz) {
     $this->correct_answer = $quiz->correct_answer;
     $this->extras = $quiz->extras;
 
+    // Keep parent modal background active if it's a program quiz
+    if ($this->quiz_type === 'program') {
+        $this->isQuizModalOpen = true;
+    }
+
     $this->showModal = true;
 };
 
 with(fn () => [
-  'quizzes' => Quiz::query()
-                       ->when($this->currentTab === 'pop', function ($query) {
-                           $query->where('quiz_type', 'pop');
-                       })
-                       ->when($this->currentTab === 'program', function ($query) {
-                           $query->where('quiz_type', 'program')
-                                 ->where('program_id', $this->program_id);
-                       })
-                       ->latest()
-                       ->get(),
+    'quizzes' => Quiz::query()
+        ->when($this->currentTab === 'pop', function ($query) {
+            $query->where('quiz_type', 'pop');
+        })
+        ->when($this->currentTab === 'program', function ($query) {
+            $query->where('quiz_type', 'program')
+                  ->where('program_id', $this->program_id);
+        })
+        ->latest()
+        ->get(),
     'programs' => Program::where('category_id', 3)
-                      ->latest()
-                      ->get(),
+        ->latest()
+        ->get(),
+    'currentProgram' => $this->program_id ? Program::find($this->program_id) : null,
 ]);
+
+$closeDrawer = function () {
+    $this->showModal = false;
+
+    // Direct back to program quiz list modal if managing program quizzes
+    if ($this->quiz_type === 'program' && $this->program_id) {
+        $this->isQuizModalOpen = true;
+    }
+};
 
 $save = function () {
     $data = $this->validate([
@@ -89,13 +104,20 @@ $save = function () {
 
     $savedTab = $this->currentTab;
     $savedProgramId = $this->program_id;
+    $savedQuizType = $this->quiz_type;
 
     $this->reset();
 
     $this->currentTab = $savedTab;
-    $this->quiz_type = $savedTab; 
+    $this->quiz_type = $savedQuizType;
     $this->program_id = $savedProgramId;
     $this->showModal = false;
+
+    // Return to "Senarai Kuiz" program modal if saving a program quiz
+    if ($savedQuizType === 'program' && $savedProgramId) {
+        $this->isQuizModalOpen = true;
+    }
+
     session()->flash('message', 'Kuiz berjaya disimpan!');
 };
 
@@ -105,6 +127,7 @@ $openCreateModal = function($programId = null) {
     if ($programId) {
         $this->quiz_type = 'program';
         $this->program_id = $programId;
+        $this->isQuizModalOpen = true;
     } else {
         $this->quiz_type = 'pop';
         $this->program_id = null;
@@ -158,21 +181,15 @@ $closeQuizModal = function () {
     @endif
 
     @if($currentTab === 'pop')
-
-    <button wire:click="openCreateModal" class="flex items-center px-5 py-2.5 my-5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
-         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-         </svg>
-        Tambah Kuiz
-    </button>
-
+        <button wire:click="openCreateModal" class="flex items-center px-5 py-2.5 my-5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+           Tambah Kuiz
+         </button>
     @endif
 
     @if($currentTab === 'program')
-    <div class="mb-4 p-4 bg-blue-50 text-blue-700 rounded-xl border border-blue-100 text-sm font-medium">
-        ℹ️ Anda sedang melihat senarai kuiz di bawah kategori <strong>Other Program</strong>.
-    </div>
-
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead class="bg-gray-50/50">
@@ -223,31 +240,15 @@ $closeQuizModal = function () {
                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                      </svg>
                                      <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover/btn:scale-100 transition-all bg-slate-900 text-white text-[9px] font-black px-2 py-1.5 rounded-lg shadow-xl uppercase whitespace-nowrap z-30">
-                                          Urus Soalan
+                                         Urus Soalan
                                      </span>
-                                </button>
-                                <button wire:click=""
-                                    class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
-                                    title="Edit Soalan">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </button>
-
-                                <button wire:click=""
-                                    wire:confirm=""
-                                    class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
-                                    title="Padam Soalan">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
                                 </button>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="px-6 py-20 text-center">
+                        <td colspan="4" class="px-6 py-20 text-center">
                             <div class="flex flex-col items-center">
                                 <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 text-gray-300">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.364-6.364l-.707-.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 21V3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -260,7 +261,6 @@ $closeQuizModal = function () {
             </tbody>
         </table>
     </div>
-
     @endif
 
     @if($currentTab === 'pop' && !$isQuizModalOpen)
@@ -277,7 +277,7 @@ $closeQuizModal = function () {
 
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div>
-                    <h3 class="text-lg font-black text-gray-900">Senarai Kuiz: Other Program</h3>
+                    <h3 class="text-lg font-black text-gray-900">Senarai Kuiz: {{ $currentProgram?->title }}</h3>
                     <p class="text-xs text-gray-500">Uruskan senarai soalan kuiz bagi modul program di sini.</p>
                 </div>
                 <button wire:click="closeQuizModal" class="text-gray-400 hover:text-gray-600 p-2 bg-white rounded-xl border border-gray-200 shadow-sm transition">
@@ -288,8 +288,8 @@ $closeQuizModal = function () {
             </div>
 
             <div class="flex justify-end w-full">
-                <button wire:click="openCreateModal({{ $program_id }})" class="flex items-center px-5 py-2.5 my-5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button wire:click="openCreateModal({{ $program_id }})" class="flex items-center px-5 py-2.5 my-5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 mx-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     Tambah Kuiz
@@ -311,7 +311,7 @@ $closeQuizModal = function () {
             <div class="absolute inset-0 overflow-hidden">
 
                 <div class="absolute inset-0 bg-gray-600/30 backdrop-blur-sm transition-opacity duration-300 opacity-100"
-                     wire:click="$set('showModal', false)"></div>
+                     wire:click="closeDrawer"></div>
 
                 <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
                     <div class="pointer-events-auto w-screen max-w-md transform transition-transform duration-300 ease-in-out bg-white shadow-2xl flex flex-col translate-x-0">
@@ -319,11 +319,11 @@ $closeQuizModal = function () {
                         <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                             <div>
                                 <h2 class="text-base font-black text-gray-900" id="slide-over-title">
-                                    {{ $editing ? '⚡ Kemaskini Kuiz' : ' Tambah Kuiz Baru' }}
+                                    {{ $editing ? ' Kemaskini Soalan' : 'Tambah Soalan Baru' }}
                                 </h2>
                                 <p class="text-xs text-gray-500 mt-0.5">Sila isi maklumat soalan kuiz di bawah.</p>
                             </div>
-                            <button type="button" wire:click="$set('showModal', false)" class="rounded-xl border border-gray-200 bg-white p-2 text-gray-400 hover:text-gray-600 shadow-sm transition">
+                            <button type="button" wire:click="closeDrawer" class="rounded-xl border border-gray-200 bg-white p-2 text-gray-400 hover:text-gray-600 shadow-sm transition">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -372,7 +372,7 @@ $closeQuizModal = function () {
                         </div>
 
                         <div class="border-t border-gray-100 px-6 py-4 bg-gray-50 flex gap-3">
-                            <button type="button" wire:click="$set('showModal', false)" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-sm">
+                            <button type="button" wire:click="closeDrawer" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-sm">
                                 Batal
                             </button>
                             <button type="submit" form="drawer-form" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 text-sm">
@@ -386,4 +386,4 @@ $closeQuizModal = function () {
             </div>
         </div>
     @endif
-  </div>
+</div>

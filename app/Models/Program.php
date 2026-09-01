@@ -40,7 +40,10 @@ class Program extends Model
         'created_by',
         'visibility_type',
         'target_program_ids',
-        'target_submission_ids'
+        'target_submission_ids',
+        'other_submission_format',
+        'submission_external_link',
+        'submission_pdf_form'
     ];
 
     protected function casts(): array
@@ -82,7 +85,7 @@ class Program extends Model
                     ->where('user_id', auth()->id())
                     ->exists();
     }
-    
+
     public function competition()
     {
         // One program. one detail competition (TOR)

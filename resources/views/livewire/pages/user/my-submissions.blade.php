@@ -65,9 +65,14 @@ $delete = function (Submission $submission) {
                                 <td class="px-6 py-6 text-right">
                                     <div class="flex justify-end gap-2">
                                         @if($submission->status === 'pending')
-                                            <a href="{{ route('user.edit-submission', $submission->id) }}"
+                                            <a href="{{ route('submissions.edit', [
+                                                                      'program' => $submission->program->id,
+                                                                      'submission_slug' => $submission->program->category->submission_slug,
+                                                                      'submission' => $submission->id
+                                                                    ])
+                                                      }}"
                                                class="px-4 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-blue-600 transition-all">
-                                                Edit
+                                                Kemaskini
                                             </a>
 
                                             <button

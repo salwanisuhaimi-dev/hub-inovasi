@@ -14,6 +14,7 @@ class ProgramType extends Model
         'description',
         'is_active',
         'submission_slug',
+        'requires_submission'
     ];
 
     public function programs()
